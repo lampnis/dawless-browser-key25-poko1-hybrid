@@ -1,0 +1,686 @@
+/* ==========================================================================
+   Open-KO: Teenage Engineering PO-33 / EP-133 Ultra-Minimalist LCD &
+   Guided Hardware Tester Styles
+   ========================================================================== */
+
+/* Authentic TE Pocket LCD Display */
+.po-pocket-screen {
+  background: #141815;
+  border: 3px solid #2d3830;
+  border-radius: 8px;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.95), 0 4px 12px rgba(0, 0, 0, 0.5);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle scanlines overlay */
+.po-pocket-screen::before {
+  content: " ";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+  background-size: 100% 3px;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* Segment Icon Badges */
+.po-segment-icons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 1px dashed #232b25;
+  padding-bottom: 6px;
+}
+
+.po-badge {
+  font-family: "Courier New", monospace;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #3b473f;
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  transition: all 0.08s ease;
+}
+
+.po-badge.active {
+  color: #ffdd59;
+  border-color: #ffdd59;
+  background: rgba(255, 221, 89, 0.15);
+  box-shadow: 0 0 6px rgba(255, 221, 89, 0.4);
+}
+
+/* Main LCD Section: Boxer + Big Numbers + Ladders */
+.po-lcd-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Animated Teenage Engineering Boxer */
+.po-boxer-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 90px;
+  background: #0d110e;
+  border: 1px solid #232b25;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.po-boxer-svg {
+  width: 65px;
+  height: 65px;
+  animation: boxer-bounce 0.6s infinite alternate ease-in-out;
+}
+
+@keyframes boxer-bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
+}
+
+.po-action-text {
+  font-family: "Courier New", monospace;
+  font-size: 8px;
+  font-weight: 900;
+  color: #ff9f43;
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+
+/* Big 7-Segment LCD Data Cluster */
+.po-lcd-data-cluster {
+  flex: 1;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #0d110e;
+  border: 1px solid #232b25;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.po-digit-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.po-mini-label {
+  font-family: "Courier New", monospace;
+  font-size: 8px;
+  font-weight: 900;
+  color: #55665b;
+  letter-spacing: 1px;
+}
+
+.po-big-digit {
+  font-family: "Courier New", monospace;
+  font-size: 32px;
+  font-weight: 900;
+  color: #ff9f43;
+  text-shadow: 0 0 8px rgba(255, 159, 67, 0.5);
+  line-height: 1;
+}
+
+.po-med-digit {
+  font-family: "Courier New", monospace;
+  font-size: 20px;
+  font-weight: 900;
+  color: #00cec9;
+  text-shadow: 0 0 6px rgba(0, 206, 201, 0.5);
+  line-height: 1;
+  margin-top: 4px;
+}
+
+/* Vertical VU Segment Ladders */
+.po-vu-ladders {
+  display: flex;
+  gap: 5px;
+  background: #0d110e;
+  border: 1px solid #232b25;
+  border-radius: 4px;
+  padding: 6px;
+}
+
+.po-vu-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+.po-vu-seg {
+  width: 8px;
+  height: 8px;
+  background: #1c241e;
+  border-radius: 1px;
+}
+
+.po-vu-seg.active {
+  background: #2ecc71;
+  box-shadow: 0 0 4px #2ecc71;
+}
+
+.po-vu-lbl {
+  font-family: "Courier New", monospace;
+  font-size: 7px;
+  font-weight: bold;
+  color: #55665b;
+  margin-top: 2px;
+}
+
+/* PO-33 16-Step Circular LED Dot Strip */
+.po-led-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0d110e;
+  border: 1px solid #232b25;
+  border-radius: 4px;
+  padding: 6px 10px;
+  gap: 4px;
+}
+
+.po-led-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1c241e;
+  border: 1px solid #0d110e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+  transition: all 0.05s ease;
+}
+
+.po-led-num {
+  font-size: 6px;
+  font-weight: bold;
+  font-family: "Courier New", monospace;
+  color: #3b473f;
+}
+
+.po-led-dot.po-led-amber {
+  background: #ff9f43;
+  box-shadow: 0 0 8px rgba(255, 159, 67, 0.8);
+}
+.po-led-dot.po-led-amber .po-led-num { color: #121417; }
+
+.po-led-dot.po-led-green {
+  background: #2ecc71;
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.9);
+}
+.po-led-dot.po-led-green .po-led-num { color: #121417; }
+
+.po-led-dot.po-led-red {
+  background: #e74c3c;
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.9);
+}
+.po-led-dot.po-led-red .po-led-num { color: #ffffff; }
+
+.po-badge-cluster {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.po-badge.po-badge-rec.active {
+  color: #ff4757;
+  border-color: #ff4757;
+  background: rgba(255, 71, 87, 0.2);
+  box-shadow: 0 0 8px rgba(255, 71, 87, 0.6);
+  animation: rec-blink 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes rec-blink {
+  0% { opacity: 1; }
+  100% { opacity: 0.35; }
+}
+
+.po-badge.po-badge-mute.active {
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.2);
+  box-shadow: 0 0 6px rgba(255, 107, 107, 0.5);
+}
+
+.po-small-lcd {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  font-weight: 900;
+  color: #00cec9;
+  letter-spacing: 0.8px;
+  background: #080a0c;
+  padding: 3px 6px;
+  border-radius: 3px;
+  border: 1px solid #1c241e;
+  text-shadow: 0 0 6px rgba(0, 206, 201, 0.4);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.po-vu-seg.green.active {
+  background: #2ecc71;
+  box-shadow: 0 0 4px #2ecc71;
+}
+
+.po-vu-seg.amber.active {
+  background: #f39c12;
+  box-shadow: 0 0 5px #f39c12;
+}
+
+.po-vu-seg.red.active {
+  background: #e74c3c;
+  box-shadow: 0 0 6px #e74c3c;
+}
+
+/* Tester Navigation Tabs */
+.tester-tab-btn {
+  background: #202428;
+  color: #828997;
+  border: 1px solid #3e4451;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.tester-tab-btn.active {
+  background: #ff5722;
+  color: #ffffff;
+  border-color: #ff5722;
+}
+
+.tester-tab-panel {
+  display: none;
+}
+
+.tester-tab-panel.active {
+  display: block;
+}
+
+/* In Minimal View: make the PO screen primary and hide cluttered generic panels */
+body.view-minimal #po-screen-wrapper {
+  display: block;
+  margin-bottom: 12px;
+}
+
+body.view-minimal .lcd-display {
+  display: none !important;
+}
+
+body.view-minimal .waveform-section {
+  display: none !important;
+}
+
+body.view-minimal #debug-hardware-section {
+  display: none !important;
+}
+
+body.view-minimal #mixer-rack-section {
+  display: none !important;
+}
+
+body.view-debug #po-screen-wrapper {
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* ==========================================================================
+   16-Track FL Studio Insert Mixer & Master DSP Effects Rack
+   ========================================================================== */
+.mixer-rack-panel {
+  background: linear-gradient(180deg, #1a1f27 0%, #13171d 100%);
+  border: 1px solid #2e3746;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+.mixer-rack-panel.collapsed #mixer-strips-container,
+.mixer-rack-panel.collapsed .dsp-rack-panel {
+  display: none !important;
+}
+
+.mixer-rack-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #29313e;
+  padding-bottom: 6px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mixer-title {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  font-weight: 900;
+  color: #26de81;
+  letter-spacing: 1px;
+}
+
+.mixer-badge {
+  font-size: 9px;
+  font-weight: 800;
+  background: #1d242e;
+  color: #18dcff;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid #303b4a;
+}
+
+.mixer-strips-scroll {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(60px, 1fr));
+  gap: 5px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.mixer-strip {
+  background: linear-gradient(180deg, #232933 0%, #191e26 100%);
+  border: 1px solid #2e3744;
+  border-radius: 4px;
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  transition: all 0.1s ease;
+}
+
+.mixer-strip.strip-melodic {
+  border-top: 3px solid #18dcff;
+}
+
+.mixer-strip.strip-drum {
+  border-top: 3px solid #ff7828;
+}
+
+.mixer-strip.active-slot {
+  border-color: #26de81;
+  background: linear-gradient(180deg, #28333a 0%, #1c242b 100%);
+  box-shadow: 0 0 10px rgba(38, 222, 129, 0.3);
+}
+
+.strip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.strip-num {
+  color: #abb2bf;
+}
+
+.strip-type-badge {
+  font-size: 7px;
+  padding: 1px 3px;
+  border-radius: 2px;
+  font-weight: 900;
+}
+
+.strip-type-badge.badge-mel {
+  background: rgba(0, 206, 201, 0.15);
+  color: #00cec9;
+}
+
+.strip-type-badge.badge-drm {
+  background: rgba(255, 159, 67, 0.15);
+  color: #ff9f43;
+}
+
+.strip-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2b313a;
+  transition: background 0.05s ease;
+}
+
+.strip-led.active {
+  background: #2ecc71;
+  box-shadow: 0 0 6px #2ecc71;
+}
+
+.strip-name {
+  font-size: 8px;
+  font-weight: bold;
+  color: #ffffff;
+  max-width: 52px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.strip-steps-badge {
+  font-size: 7px;
+  font-family: monospace;
+  color: #5c6370;
+  text-align: center;
+}
+
+.strip-steps-badge.has-steps {
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.strip-fader-box {
+  width: 100%;
+  padding: 2px 0;
+}
+
+.strip-fader {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  background: #2c313a;
+  border-radius: 2px;
+  outline: none;
+}
+
+.strip-fader::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff5722;
+  cursor: pointer;
+}
+
+.strip-btn-row {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+}
+
+.strip-btn {
+  flex: 1;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 2px 0;
+  background: #282c34;
+  color: #828997;
+  border: 1px solid #3e4451;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.strip-mute-btn.active {
+  background: #e74c3c;
+  color: #ffffff;
+  border-color: #e74c3c;
+  box-shadow: 0 0 6px rgba(231, 76, 60, 0.6);
+}
+
+.strip-solo-btn.active {
+  background: #f39c12;
+  color: #ffffff;
+  border-color: #f39c12;
+  box-shadow: 0 0 6px rgba(243, 156, 18, 0.6);
+}
+
+.strip-duck-btn.active {
+  background: rgba(24, 220, 255, 0.22);
+  color: #18dcff;
+  border-color: #18dcff;
+  box-shadow: 0 0 6px rgba(24, 220, 255, 0.45);
+}
+
+.strip-duck-btn.sc-source {
+  background: #ff7828;
+  color: #111418;
+  border-color: #ffb142;
+  box-shadow: 0 0 6px rgba(255, 120, 40, 0.6);
+}
+
+.strip-jam-btn {
+  width: 100%;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 3px 0;
+  background: #1f2630;
+  color: #8b96a8;
+  border: 1px solid #323c4a;
+  border-radius: 2px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+
+.strip-jam-btn.active {
+  background: linear-gradient(180deg, #26de81 0%, #1bb867 100%);
+  color: #0b140f;
+  border-color: #4cd995;
+  box-shadow: 0 0 8px rgba(38, 222, 129, 0.5);
+}
+
+/* Master DSP Rack Panel */
+.dsp-rack-panel {
+  background: #131619;
+  border: 1px solid #24292e;
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dsp-rack-title {
+  font-family: "Courier New", monospace;
+  font-size: 9px;
+  font-weight: 900;
+  color: #e67e22;
+  letter-spacing: 0.8px;
+}
+
+.dsp-rack-modules {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dsp-module {
+  flex: 1;
+  min-width: 140px;
+  background: #1a1e23;
+  border: 1px solid #282c34;
+  border-radius: 4px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dsp-mod-title {
+  font-size: 8px;
+  font-weight: 900;
+  color: #00cec9;
+  letter-spacing: 0.5px;
+}
+
+.dsp-mod-readout {
+  font-family: monospace;
+  font-size: 9px;
+  font-weight: bold;
+  color: #ff9f43;
+}
+
+.dsp-mod-sub {
+  font-size: 7px;
+  color: #7f8c8d;
+}
+
+.comp-meter-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.comp-meter-bar {
+  flex: 1;
+  height: 5px;
+  background: #0d0f12;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+#comp-gr-fill {
+  width: 0%;
+  height: 100%;
+  background: #e74c3c;
+  transition: width 0.05s ease;
+}
+
+.dsp-fx-badges {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+}
+
+.fx-badge {
+  font-size: 7px;
+  font-weight: 800;
+  padding: 3px 2px;
+  text-align: center;
+  background: #202428;
+  color: #7f8c8d;
+  border: 1px solid #2d333b;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.fx-badge.active {
+  background: #ff5722;
+  color: #ffffff;
+  border-color: #ff5722;
+  box-shadow: 0 0 6px rgba(255, 87, 34, 0.6);
+}
