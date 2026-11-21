@@ -91,6 +91,7 @@ export class MidiManager {
     this.keyboardBaseNote = 48; // Default lowest key (C3) on APC Key 25 Mk1
     this.ledCache = new Map();
     this.recentLedNotes = new Map();
+    this.extraInputs = [];
   }
 
   async init() {
@@ -139,14 +140,18 @@ export class MidiManager {
     if (!this.midiAccess) return;
 
     let matchedIn = null;
+    const extraMatchedIns = [];
     let matchedOut = null;
 
     for (const input of this.midiAccess.inputs.values()) {
       const name = (input.name || '').toLowerCase();
       if (name.includes('apc key 25') || name.includes('apc key') || name.includes('apc')) {
-        matchedIn = input;
-        this.deviceMode = (name.includes('mk2') || name.includes('mkii')) ? 'MK2' : 'MK1';
-        break;
+        if (!matchedIn) {
+          matchedIn = input;
+          this.deviceMode = (name.includes('mk2') || name.includes('mkii')) ? 'MK2' : 'MK1';
+        } else {
+          extraMatchedIns.push(input);
+        }
       }
     }
 
@@ -166,6 +171,14 @@ export class MidiManager {
     // to prevent blasting Note On LED commands to external synths!
 
     if (matchedIn) this.setInput(matchedIn);
+    // Detach previous extra inputs, then attach secondary APC Key 25 ports (e.g. Mk2 Keys + Control)
+    for (const oldExtra of this.extraInputs) {
+      oldExtra.onmidimessage = null;
+    }
+    this.extraInputs = extraMatchedIns;
+    for (const extraIn of this.extraInputs) {
+      extraIn.onmidimessage = (msg) => this.handleMidiMessage(msg);
+    }
     if (matchedOut) this.setOutput(matchedOut);
 
     this._notifyStatus('connected', {
@@ -232,12 +245,13 @@ export class MidiManager {
     const command = statusByte & 0xF0;
     const channel = (statusByte & 0x0F) + 1; // 1-16 (Channel 1 = controls/pads, Channel 2 = keybed)
 
-    // Strict MIDI Echo Feedback Elimination:
-    // Drop any Channel 1 Note message reflecting an outgoing LED command within 500ms
-    // to prevent loopback into test wizards or audio voices.
-    if ((command === 0x90 || command === 0x80) && channel === 1) {
-      const sendTime = this.recentLedNotes.get(data1);
-      if (sendTime && (performance.now() - sendTime < 500)) {
+    // Targeted MIDI Loopback Echo Elimination:
+    // Only drop Channel 1 Note On messages that mirror the exact outgoing LED velocity (<127)
+    // within 40ms. Real physical APC Key 25 button/pad presses always send velocity 127
+    // (or Note Off 0x80), so human presses (Play/Pause, Rec, Step & Sound pads) are NEVER dropped!
+    if (command === 0x90 && channel === 1 && data2 < 127) {
+      const recent = this.recentLedNotes.get(data1);
+      if (recent && recent.velocity === data2 && (performance.now() - recent.time < 40)) {
         return;
       }
     }
@@ -527,13 +541,19 @@ export class MidiManager {
       }
     } else {
       if (note === sn.scene1 || note === 82) {
-        if (this.callbacks.onTransportPlayPause) this.callbacks.onTransportPlayPause();
-        if (this.callbacks.onSceneButton) this.callbacks.onSceneButton(1, true);
+        if (this.callbacks.onTransportPlayPause) {
+          this.callbacks.onTransportPlayPause();
+        } else if (this.callbacks.onSceneButton) {
+          this.callbacks.onSceneButton(1, true);
+        }
         return;
       }
       if (note === sn.scene2 || note === 83) {
-        if (this.callbacks.onRecordToggle) this.callbacks.onRecordToggle();
-        if (this.callbacks.onSceneButton) this.callbacks.onSceneButton(2, true);
+        if (this.callbacks.onRecordToggle) {
+          this.callbacks.onRecordToggle();
+        } else if (this.callbacks.onSceneButton) {
+          this.callbacks.onSceneButton(2, true);
+        }
         return;
       }
       if (note === sn.scene3 || note === 84) {
@@ -662,11 +682,6 @@ export class MidiManager {
     const coord = this.getPadCoordinates(note);
     if (coord) {
       const { row, col } = coord;
-      if (row === 0 || row === 1) {
-        const stepIndex = (row * 8) + col;
-        this.heldSteps.delete(stepIndex);
-        if (this.callbacks.onStepHold) this.callbacks.onStepHold(stepIndex, false);
-      }
       if (this.patternButtonHeld || this.soundButtonHeld) {
         return;
       }
@@ -678,6 +693,12 @@ export class MidiManager {
         } else if (row === 4) {
           this.heldFx.delete(col);
           if (this.callbacks.onFxTrigger) this.callbacks.onFxTrigger(col, false, 0);
+        }
+      } else if (row === 0 || row === 1) {
+        const stepIndex = (row * 8) + col;
+        if (this.heldSteps.has(stepIndex)) {
+          this.heldSteps.delete(stepIndex);
+          if (this.callbacks.onStepHold) this.callbacks.onStepHold(stepIndex, false);
         }
       }
       return;
@@ -772,7 +793,7 @@ export class MidiManager {
 
     if (this.ledCache.get(note) === velocity) return;
     this.ledCache.set(note, velocity);
-    this.recentLedNotes.set(note, performance.now());
+    this.recentLedNotes.set(note, { time: performance.now(), velocity });
 
     try {
       this.activeOutput.send([0x90, note, velocity]);

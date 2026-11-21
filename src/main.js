@@ -42,16 +42,20 @@ window.addEventListener('DOMContentLoaded', async () => {
     console.error('Error during ui.init():', err);
   }
 
-  // Global Audio Unlocker for browser autoplay policies
-  const unlockAudio = () => {
-    audioEngine.ensureAudioContext();
-    window.removeEventListener('click', unlockAudio);
-    window.removeEventListener('keydown', unlockAudio);
-    window.removeEventListener('touchstart', unlockAudio);
+  // Global Audio Unlocker for browser autoplay policies (stays active until AudioContext is running)
+  const unlockAudio = async () => {
+    await audioEngine.ensureAudioContext();
+    ui.updateAudioStateIndicator();
+    if (audioEngine.ctx && audioEngine.ctx.state === 'running') {
+      window.removeEventListener('pointerdown', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
+    }
   };
-  window.addEventListener('click', unlockAudio);
+  window.addEventListener('pointerdown', unlockAudio);
   window.addEventListener('keydown', unlockAudio);
-  window.addEventListener('touchstart', unlockAudio);
+  if (audioEngine.ctx) {
+    audioEngine.ctx.onstatechange = () => ui.updateAudioStateIndicator();
+  }
 
   // Setup Header Actions, Modal Dialogs & Keyboard Shortcuts
   try {
@@ -327,17 +331,34 @@ function _bindControlsAndShortcuts(audioEngine, sequencer, midiManager, ui) {
 
   // Keyboard Shortcuts:
   // Space: Play / Pause
-  // Esc: Stop & Reset to start
+  // Esc: Close any open modal (GuidedTester, Settings, Guide, Logs, Walkthrough), OR Stop & Reset
   // 1: Sample Mode, 2: Pattern Mode, 3: Performance Mode
-  // Tab: Toggle Minimal vs Debug view
+  // Tab: Toggle Minimal vs Studio view
   window.addEventListener('keydown', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
     if (e.code === 'Space') {
       e.preventDefault();
+      if (document.activeElement && document.activeElement.tagName === 'BUTTON') {
+        document.activeElement.blur();
+      }
       sequencer.togglePlayPause();
     } else if (e.code === 'Escape') {
       e.preventDefault();
+      // Close any open modal first before stopping transport
+      const openModal = document.querySelector('.modal-overlay.open');
+      if (openModal) {
+        if (openModal.id === 'guided-tester-modal' && ui.guidedTester) {
+          ui.guidedTester.close();
+        } else {
+          openModal.classList.remove('open');
+        }
+        return;
+      }
+      if (ui.walkthrough && ui.walkthrough.isActive) {
+        ui.walkthrough.close();
+        return;
+      }
       sequencer.stopAndReset();
       ui._updateLcdStatus('STOPPED // RESET TO START');
     } else if (e.key === '1') {
@@ -349,6 +370,9 @@ function _bindControlsAndShortcuts(audioEngine, sequencer, midiManager, ui) {
     } else if (e.key === 'Tab') {
       e.preventDefault();
       ui.toggleViewMode();
+    } else if (e.key === '?' && ui.hardwareHelp) {
+      e.preventDefault();
+      ui.hardwareHelp.toggleInfoBox();
     }
   });
 

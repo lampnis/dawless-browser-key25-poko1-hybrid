@@ -3,343 +3,386 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Open-KO — Browser Hardware Sampler &amp; Sequencer for Akai APC Key 25</title>
+  <title>Open-KO — FL Studio Rack &amp; Hardware Sampler for Akai APC Key 25</title>
   <link rel="stylesheet" href="./styles/open-ko.css">
 </head>
 <body class="view-debug">
 
   <div class="chassis">
-    <!-- Header Section -->
-    <header class="header-bar">
-      <div class="brand-section">
-        <div class="brand-logo">OPEN-KO</div>
-        <div class="brand-sub">APC KEY 25 WORKSTATION // FL STUDIO RACK &amp; PO-33 HYBRID</div>
+    <!-- FL Studio-Style Main Docked Toolbar -->
+    <header class="header-bar" id="fl-main-toolbar">
+      <div class="toolbar-row toolbar-row-top">
+        <!-- Brand & Audio Engine Status -->
+        <div class="toolbar-group brand-section">
+          <div class="brand-logo" title="Open-KO Hardware Workstation" data-apc-hint="Open-KO // 100% Standalone Akai APC Key 25 Mk1 Workstation">OPEN-KO</div>
+          <button id="btn-audio-unlock" class="fl-btn audio-locked" data-apc-ctrl="keys" title="Click once to unlock browser Web Audio engine for MIDI playback" data-apc-hint="Web Audio Engine Status — Click if locked to enable sound">ENABLE AUDIO</button>
+        </div>
+
+        <div class="toolbar-sep"></div>
+
+        <!-- Transport Cluster -->
+        <div class="toolbar-group transport-group" id="tour-transport">
+          <button id="btn-transport-play" class="fl-btn btn-play" data-apc-ctrl="play,scene1" title="APC: PLAY/PAUSE (Note 91) or Scene 1 (Note 82) -> Play / Pause (keeps cursor)" data-apc-hint="APC: PLAY/PAUSE (Note 91) or Scene 1 (Note 82) -> Play / Pause">▶ PLAY</button>
+          <button id="btn-transport-stop" class="fl-btn btn-stop" data-apc-ctrl="stop" title="APC: STOP ALL CLIPS (Note 81) -> Stop &amp; Reset Playhead to Step 1" data-apc-hint="APC: STOP ALL CLIPS (Note 81) -> Stop & Reset to Step 1">■ STOP</button>
+          <button id="btn-transport-rec" class="fl-btn btn-record" data-apc-ctrl="rec,scene2" title="APC: REC (Note 93) or Scene 2 (Note 83) -> Arm Freeform 128th Auto-BPM or Quantized Overdub" data-apc-hint="APC: REC (Note 93) or Scene 2 (Note 83) -> Freeform Auto-BPM / Overdub Record">● REC</button>
+          <button id="btn-rec-mode" class="fl-btn btn-rec-mode is-freeform" data-apc-ctrl="shift,pad-1-0,play" title="APC: Shift + Pad 9 (Note 24) or Shift + PLAY (Note 91) -> Toggle Freeform (Auto-BPM 128th) vs Quantized" data-apc-hint="APC: Shift + Pad 9 (Note 24) or Shift + PLAY -> Toggle Freeform Auto-BPM vs Quantized">FREEFORM 128th</button>
+          <button id="btn-tap-tempo" class="fl-btn" data-apc-ctrl="shift,scene4" title="APC: Shift + Scene 4 (Note 98 + 85) -> Tap rhythmically to set BPM" data-apc-hint="APC: Shift + Scene 4 (Note 85) -> Hardware Tap Tempo">TAP</button>
+        </div>
+
+        <div class="toolbar-sep"></div>
+
+        <!-- FL Recessed Digital Readouts (BPM, Pattern, Slot, Filter, Voices, VU) -->
+        <div class="toolbar-group fl-lcd-cluster">
+          <div class="fl-readout-well" data-apc-ctrl="shift,knob-7,knob-0" title="APC: Shift + Knob 8 (Last Knob, CC 55) or Master Knob 1 (CC 48) -> Change BPM" data-apc-hint="APC: Shift + Knob 8 (CC 55) or Master Knob 1 (CC 48) -> Change BPM">
+            <span class="well-label">TEMPO</span>
+            <div class="well-bpm-row">
+              <button id="btn-bpm-down" class="well-stepper" data-apc-ctrl="shift,knob-7" title="Decrease BPM (Shift + Knob 8 CCW)" data-apc-hint="APC: Shift + Knob 8 CCW -> Decrease BPM">-</button>
+              <span id="lcd-bpm" class="well-digits">120</span>
+              <button id="btn-bpm-up" class="well-stepper" data-apc-ctrl="shift,knob-7" title="Increase BPM (Shift + Knob 8 CW)" data-apc-hint="APC: Shift + Knob 8 CW -> Increase BPM">+</button>
+            </div>
+          </div>
+
+          <div class="fl-readout-well" data-apc-ctrl="track-2,row-2" title="APC: Hold ◄ (Note 66) + Pad 1-16 to jump/chain Pattern, or tap Row 3 Pads" data-apc-hint="APC: Hold ◄ (Note 66) + Pad 1-16 -> Jump / Chain Pattern | Row 3 Pads -> P1-P8">
+            <span class="well-label">PAT</span>
+            <span id="lcd-pattern" class="well-digits well-cyan">P1</span>
+          </div>
+
+          <div class="fl-readout-well well-wide" data-apc-ctrl="track-3,track-0,track-1" title="APC: Hold ► (Note 67) + Pad 1-16 -> Select Track Slot | ▲/▼ -> Prev/Next Slot" data-apc-hint="APC: Hold ► (Note 67) + Pad 1-16 -> Select Slot | ▲/▼ -> Prev/Next Track">
+            <span class="well-label">CHANNEL</span>
+            <div class="well-slot-row">
+              <span id="lcd-slot" class="well-digits-sm">SLOT 9</span>
+              <span id="lcd-slot-name" class="well-name">TR-909 House Kit</span>
+            </div>
+          </div>
+
+          <div class="fl-readout-well" data-apc-ctrl="knob-3,knob-4" title="APC: Knob 4 (CC 51) -> Dual PO Filter (LPF < 64 > HPF) | Knob 5 (CC 52) -> Resonance Q" data-apc-hint="APC: Knob 4 (CC 51) -> PO Dual Filter (LPF < 64 > HPF) | Knob 5 -> Res Q">
+            <span class="well-label">FILTER</span>
+            <span id="lcd-filter" class="well-digits-xs">OFF</span>
+          </div>
+
+          <div class="fl-readout-well well-narrow" data-apc-ctrl="keys" title="APC: Active polyphonic voices played on Channel 2 Keybed" data-apc-hint="APC: 25-Key Piano Keybed (Ch 2) -> Active Polyphonic Voices">
+            <span class="well-label">VCS</span>
+            <span id="lcd-voices" class="well-digits-xs">0</span>
+          </div>
+
+          <div class="fl-readout-well well-vu" data-apc-ctrl="knob-7" title="APC: Stereo Master Output Peak Meter" data-apc-hint="APC: Master Output VU Meter | Master Knob 8 -> Output Level">
+            <span class="well-label">OUT</span>
+            <div class="vu-meter-box">
+              <div id="vu-meter-l" class="vu-bar"></div>
+              <div id="vu-meter-r" class="vu-bar"></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="header-actions">
-        <!-- Transport Controls -->
-        <button id="btn-transport-play" class="btn-tactile btn-play" title="APC: PLAY/PAUSE (Note 91) or Scene 1 (Note 82) - Play/Pause" data-apc-hint="APC: PLAY/PAUSE (Note 91) or Scene 1 (Note 82)">▶ PLAY</button>
-        <button id="btn-transport-rec" class="btn-tactile btn-record" title="APC: REC (Note 93) or Scene 2 (Note 83) - Freeform 128th Auto-BPM / Live Loop Record" data-apc-hint="APC: REC (Note 93) or Scene 2 (Note 83) -> Arm Freeform / Overdub Rec">● REC</button>
-        <button id="btn-rec-mode" class="btn-tactile" style="background: #1d232d; border-color: #ff7828; color: #ff7828;" title="APC: Shift + Pad 9 (Note 24) or Shift + PLAY (Note 91) - Toggle Freeform (Auto-BPM 128th) vs Quantized Recording" data-apc-hint="APC: Shift + Pad 9 (Note 24) or Shift + PLAY -> Toggle Freeform vs Quantized Rec">REC: FREEFORM (128th)</button>
-        <button id="btn-transport-stop" class="btn-tactile btn-stop" title="APC: STOP ALL CLIPS (Note 81) - Stop and Reset Playhead to 0" data-apc-hint="APC: STOP ALL CLIPS (Note 81) -> Reset Playhead">■ STOP</button>
-        <button id="btn-live-sample" class="btn-tactile" style="background: #2d3436; border-color: #e17055;" title="APC: Shift + REC (Note 98 + 93) or Scene 2 in Sample Mode" data-apc-hint="APC: Shift + REC (Note 98 + 93) -> Line/Mic Sample">🎙 LINE/MIC</button>
-        <button id="btn-tab-sample" class="btn-tactile" style="background: #2d3436; border-color: #0984e3;" title="APC: Direct Computer / Browser Tab Audio Capture (YouTube, Spotify, etc.)" data-apc-hint="APC: Direct Computer / Tab Audio Capture">🖥️ TAB AUDIO</button>
-        <button id="btn-tap-tempo" class="btn-tactile" title="APC: Shift + Scene 4 (Note 98 + 85) - Tap rhythmically twice to set BPM" data-apc-hint="APC: Shift + Scene 4 -> Hardware Tap Tempo">TAP</button>
-        <button id="btn-knob-bank" class="btn-tactile" style="background: #232d3f; border-color: #61afef; color: #61afef;" title="APC: DEVICE (Note 71) or Shift + ► (Note 67) - Toggle Track / Master Knobs" data-apc-hint="APC: DEVICE (Note 71) or Shift + ► -> Toggle Knobs">🎛 TRACK KNOBS</button>
-        <button id="btn-export-audio" class="btn-tactile" style="background: #1b382b; border-color: #2ecc71; color: #2ecc71;" title="APC: Export Arrangement to Studio-Quality 32-bit WAV File" data-apc-hint="APC: Render Full Song Chain to WAV File">⬇ EXPORT WAV</button>
-        <button id="btn-save-project" class="btn-tactile" style="background: #1e272e; border-color: #f1c40f; color: #f1c40f;" title="APC: Save Song State to Browser LocalStorage" data-apc-hint="APC: Save Song Project to LocalStorage">💾 SAVE</button>
-        <button id="btn-new-project" class="btn-tactile" style="background: #1e272e; border-color: #e74c3c; color: #e74c3c;" title="APC: Reset Song to Clean Default 4/4 TR-909 Kick Project" data-apc-hint="APC: Reset to Clean Default 4/4 TR-909 Kick">★ NEW</button>
-        <button id="btn-layout-map" class="btn-tactile" style="background: #252a38; border-color: #61afef;" title="APC: View Akai APC Key 25 Mk1 Hardware Reference &amp; MIDI Layout Map" data-apc-hint="APC: View APC Key 25 Mk1 Hardware Reference Map">🎛 APC MK1 MAP</button>
-        <button id="btn-open-tester" class="btn-tactile" style="background: #2c3e50; border-color: #34495e;" title="APC: Launch Interactive Hardware Verification &amp; Guided MIDI Tester" data-apc-hint="APC: Launch Guided Hardware MIDI Calibration">🧪 TEST APC</button>
-        <button id="btn-led-power" class="btn-tactile" style="background: #1e2630; border-color: #f39c12; color: #ff9f43;" title="APC: Cycle LED Current (Normal -> Silent Eco USB -> Stealth Off)" data-apc-hint="APC: Cycle LED Current (Normal -> Eco -> Stealth)">⚡ LED: NORMAL</button>
-        <button id="btn-guide-modal" class="btn-tactile" title="APC: User Guide, PO-33 Muscle Memory &amp; Hardware Shortcuts" data-apc-hint="APC: View User Guide & PO-33 Muscle Memory Cheat Sheet">📖 GUIDE</button>
-        <button id="btn-open-logs" class="btn-tactile" style="background: #142226; border-color: #00cec9; color: #00cec9;" title="APC: View &amp; Download Master Console &amp; Historical Session Logs" data-apc-hint="APC: View & Download Diagnostics Session Logs">📋 LOGS</button>
-        <button id="btn-settings" class="btn-tactile" title="APC: MIDI Port Selection &amp; Audio Device Routing Settings" data-apc-hint="APC: Open MIDI & Audio Port Routing Settings">⚙ SETUP</button>
+
+      <!-- Toolbar Row 2: Hint Bar + Sampling + Utilities -->
+      <div class="toolbar-row toolbar-row-bottom">
+        <!-- FL Studio Iconic Top-Left Hint Panel -->
+        <div class="fl-hint-panel">
+          <div id="lcd-status-msg" class="status-message">READY // HOVER ANY CONTROL TO SEE ITS AKAI APC KEY 25 MAPPING</div>
+          <div class="hint-meters">
+            <div class="in-vu-wrap" data-apc-ctrl="shift,rec" title="Live Mic / Line / Tab Audio Input Level" data-apc-hint="APC: Shift + REC (Note 93) -> Live Audio Input Level">
+              <span>IN</span>
+              <div class="in-vu-track"><div id="input-vu-bar"></div></div>
+            </div>
+            <div class="midi-indicators" title="USB MIDI Input / Output Activity LEDs" data-apc-hint="Real-Time Akai APC Key 25 USB MIDI Activity">
+              <span class="midi-indicator"><span id="midi-led-in" class="mini-led"></span>IN</span>
+              <span class="midi-indicator"><span id="midi-led-out" class="mini-led"></span>OUT</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar-actions">
+          <button id="btn-live-sample" class="fl-btn" data-apc-ctrl="shift,rec" title="APC: Shift + REC (Note 98 + 93) -> Record live sample from Mic / USB Audio Interface" data-apc-hint="APC: Shift + REC (Note 98 + 93) -> Live Line / Mic Sampling">LINE / MIC</button>
+          <button id="btn-tab-sample" class="fl-btn" data-apc-ctrl="shift,rec" title="Capture digital audio directly from a Chrome/Edge Tab (YouTube, Spotify, SoundCloud)" data-apc-hint="Capture Browser Tab Audio (YouTube / Spotify) directly into active slot">TAB AUDIO</button>
+          <button id="btn-knob-bank" class="fl-btn" data-apc-ctrl="track-7,shift,track-3" title="APC: DEVICE (Note 71) or Shift + ► (Note 67) -> Toggle Track vs Master Knobs" data-apc-hint="APC: DEVICE (Note 71) or Shift + ► -> Toggle Track / Master Knob Bank">KNOBS: TRACK</button>
+          <button id="btn-led-power" class="fl-btn" data-apc-ctrl="matrix" title="Cycle APC Key 25 LED current mode (Normal / Silent Eco USB / Stealth Off)" data-apc-hint="Cycle APC LED Power Mode (Eco eliminates USB ground-loop hum)">LED: NORM</button>
+          <span class="toolbar-sep-sm"></span>
+          <button id="btn-save-project" class="fl-btn" title="Save patterns, 128th micro-timing, sidechain, and slot params to browser storage" data-apc-hint="Save Song Project (v2 Schema) to LocalStorage">SAVE</button>
+          <button id="btn-new-project" class="fl-btn" title="Reset arrangement to a clean 4/4 TR-909 Kick project" data-apc-hint="New Project — Reset to Clean 4/4 Kick">NEW</button>
+          <button id="btn-export-audio" class="fl-btn btn-accent-green" title="Render full chained arrangement (with 128th micro-timing &amp; sidechain) to 16-bit 44.1kHz WAV" data-apc-hint="Offline Render Full Song Chain to 16-Bit Stereo WAV">EXPORT WAV</button>
+          <span class="toolbar-sep-sm"></span>
+          <button id="btn-walkthrough" class="fl-btn btn-accent-orange" title="Launch interactive step-by-step guided walkthrough tour" data-apc-hint="Start Guided First-Run Walkthrough Tour">TOUR</button>
+          <button id="btn-toggle-help-panel" class="fl-btn" title="Toggle Ableton-style docked APC Key 25 Live Help Panel" data-apc-hint="Toggle Live APC Key 25 Hardware Info Box">INFO BOX</button>
+          <button id="btn-layout-map" class="fl-btn" data-apc-ctrl="shift,stop" title="Open Akai APC Key 25 Mk1 MIDI Layout Reference" data-apc-hint="Open Full Akai APC Key 25 Mk1 MIDI Code Reference">APC MAP</button>
+          <button id="btn-open-tester" class="fl-btn" data-apc-ctrl="shift,stop" title="APC: Shift + Stop All (Note 98 + 81) -> Interactive Hardware Diagnostic &amp; Calibration" data-apc-hint="APC: Shift + Stop All (Note 81) -> Interactive Hardware MIDI Tester">TEST APC</button>
+          <button id="btn-guide-modal" class="fl-btn" title="Open Artist &amp; Hardware Quick Manual" data-apc-hint="Open Full Hardware & Beatmaking Quick Manual">GUIDE</button>
+          <button id="btn-open-logs" class="fl-btn" title="View &amp; Download Session Console Logs" data-apc-hint="Open Diagnostics Console & Session Archive Logs">LOGS</button>
+          <button id="btn-settings" class="fl-btn" title="Configure Web MIDI In/Out Ports, APC Model &amp; Audio Input Interface" data-apc-hint="Configure MIDI Ports, Grid Orientation & Audio Input Device">SETUP</button>
+        </div>
       </div>
     </header>
 
-    <!-- 3-Way Mode Switcher & View Toggle Bar -->
-    <nav class="mode-switcher-bar">
+    <!-- Mode Switcher & View Toggle Strip -->
+    <nav class="mode-switcher-bar" id="tour-modes">
       <div class="mode-buttons">
-        <button class="mode-btn" data-mode="sample" title="APC: Shift + Scene 1 (Note 98 + Note 82) -> Sample Mode (Trim, Slice, Record)" data-apc-hint="APC: Shift + Scene 1 -> Mode 1: Sample Mode">1. SAMPLE</button>
-        <button class="mode-btn active" data-mode="pattern" title="APC: Shift + Scene 2 (Note 98 + Note 83) -> Pattern Mode (Sequencing &amp; P-Locks)" data-apc-hint="APC: Shift + Scene 2 -> Mode 2: Pattern Mode">2. PATTERN</button>
-        <button class="mode-btn" data-mode="performance" title="APC: Shift + Scene 3 (Note 98 + Note 84) -> Performance Mode (Scene &amp; Clip Launcher)" data-apc-hint="APC: Shift + Scene 3 -> Mode 3: Performance Mode">3. PERFORMANCE</button>
+        <button class="mode-btn" data-mode="sample" data-apc-ctrl="shift,scene1" title="APC: Shift + Scene 1 (Note 98 + 82) -> Mode 1: Sample Mode (Slots, Slices &amp; Tools)" data-apc-hint="APC: Shift + Scene 1 (Note 82) -> Mode 1: Sample Mode">1. SAMPLE</button>
+        <button class="mode-btn active" data-mode="pattern" data-apc-ctrl="shift,scene2" title="APC: Shift + Scene 2 (Note 98 + 83) -> Mode 2: Pattern / Channel Rack Mode" data-apc-hint="APC: Shift + Scene 2 (Note 83) -> Mode 2: Channel Rack / Pattern Mode">2. PATTERN</button>
+        <button class="mode-btn" data-mode="performance" data-apc-ctrl="shift,scene3" title="APC: Shift + Scene 3 (Note 98 + 84) -> Mode 3: Live Performance Scene Launcher" data-apc-hint="APC: Shift + Scene 3 (Note 84) -> Mode 3: Performance Launcher">3. PERFORMANCE</button>
       </div>
-      <button id="btn-toggle-view" class="view-toggle-btn" title="APC: Toggle between Minimal Retro PO-33 Screen and Full Hardware Monitor" data-apc-hint="APC: Toggle Minimal PO-33 LCD vs Hardware Debug Monitor">📱 MINIMAL VIEW</button>
+      <div class="mode-bar-right">
+        <span class="apc-shortcut-strip">SHIFT + ▲/▼: PRESETS &nbsp;|&nbsp; HOLD ► + PAD: SELECT TRACK &nbsp;|&nbsp; HOLD ◄ + PAD: PATTERN / CHAIN</span>
+        <button id="btn-toggle-view" class="fl-btn view-toggle-btn" data-apc-ctrl="shift,sustain" title="APC: Shift + Sustain (CC 64) -> Switch between Minimal PO-33 Screen and Full FL Studio Rack" data-apc-hint="APC: Shift + Sustain (CC 64) -> Toggle Minimal PO-33 Screen vs Studio View">PO-33 VIEW</button>
+      </div>
     </nav>
 
-    <!-- Ultra-Minimalist Teenage Engineering PO-33 / EP-133 Retro Screen Wrapper -->
+    <!-- Ultra-Minimalist Teenage Engineering PO-33 / EP-133 Retro Screen Wrapper (Shown in Minimal View) -->
     <div id="po-screen-wrapper"></div>
 
-    <!-- Retro LCD Screen (PO-33 & EP-133 Inspired) -->
-    <section class="lcd-display">
-      <div class="lcd-top-row">
-        <!-- BPM -->
-        <div class="lcd-cell" title="APC: Turn Shift + Knob 8 (Last Knob, CC 55) or Master Knob 1 (CC 48) to change BPM | Shift + Scene 4 for Tap Tempo" data-apc-hint="APC: Shift + Knob 8 (Last Knob) or Master Knob 1 -> Change BPM | Shift + Scene 4 -> Tap Tempo">
-          <span class="label">TEMPO</span>
-          <div style="display: flex; align-items: baseline; gap: 4px;">
-            <span id="lcd-bpm" class="value" title="APC: Turn Shift + Knob 8 (Last Knob, CC 55) or Master Knob 1 (CC 48) to change BPM | Shift + Scene 4 for Tap Tempo" data-apc-hint="APC: Shift + Knob 8 (Last Knob) or Master Knob 1 -> Change BPM | Shift + Scene 4 -> Tap Tempo">92</span>
-            <span style="font-size: 10px; color: var(--text-lcd-dim);">BPM</span>
-            <button id="btn-bpm-down" style="background: none; border: none; color: var(--text-lcd-dim); cursor: pointer; font-weight: bold; margin-left: 4px;" title="APC: Turn Shift + Knob 8 (Last Knob) CCW or Master Knob 1 CCW" data-apc-hint="APC: Turn Shift + Knob 8 (Last Knob) CCW -> Decrease BPM">-</button>
-            <button id="btn-bpm-up" style="background: none; border: none; color: var(--text-lcd-dim); cursor: pointer; font-weight: bold;" title="APC: Turn Shift + Knob 8 (Last Knob) CW or Master Knob 1 CW" data-apc-hint="APC: Turn Shift + Knob 8 (Last Knob) CW -> Increase BPM">+</button>
-          </div>
+    <!-- FL Studio Playlist Arrangement Chain Window -->
+    <section class="fl-window song-chain-bar" id="tour-playlist" data-apc-ctrl="track-2,row-2" title="APC: Hold ◄ (Note 66) + tap Pad sequence to chain patterns live! Scene 5 appends current." data-apc-hint="APC: Hold ◄ (Note 66) + tap Pads to chain live | Scene 5 appends current">
+      <div class="fl-window-titlebar chain-header">
+        <div class="fl-title-left">
+          <span class="fl-title-dot dot-teal"></span>
+          <span>PLAYLIST — ARRANGEMENT PATTERN CHAIN</span>
         </div>
-
-        <!-- Pattern -->
-        <div class="lcd-cell" title="APC: Hold ◄ (Note 66) + Pad 1..16 to jump or chain. Quick tap ◄ / ► to step" data-apc-hint="APC: Hold ◄ (Note 66) + Pad 1-16 to jump/chain. Quick tap ◄/►">
-          <span class="label">PATTERN</span>
-          <span id="lcd-pattern" class="value">P1</span>
-        </div>
-
-        <!-- Active Slot & Name -->
-        <div class="lcd-cell" title="APC: Hold ► (Note 67) + Pad 1..16 to select sound. Quick tap ▲ / ▼ to step" data-apc-hint="APC: Hold ► (Note 67) + Pad 1-16 to select sound. Quick tap ▲/▼">
-          <span class="label">SOUND SLOT</span>
-          <div style="display: flex; gap: 6px; align-items: baseline;">
-            <span id="lcd-slot" class="value">SLOT 1</span>
-            <span id="lcd-slot-name" class="value secondary" style="font-size: 13px;">Rhodes Bell</span>
-          </div>
-        </div>
-
-        <!-- Filter Status -->
-        <div class="lcd-cell" title="APC: Turn Knob 4 (CC 51) for Dual PO LPF &lt; 64 &gt; HPF" data-apc-hint="APC: Knob 4 (CC 51) -> Sweep LPF &lt; 64 &gt; HPF">
-          <span class="label">DUAL PO-FILTER</span>
-          <span id="lcd-filter" class="value secondary" style="font-size: 14px;">FILTER: OFF</span>
-        </div>
-
-        <!-- Active Voices -->
-        <div class="lcd-cell" title="APC: Play Ch 2 Piano Keybed (6-voice polyphony per track)" data-apc-hint="APC: Play Ch 2 Keybed polyphonic piano keys">
-          <span class="label">VOICES</span>
-          <span id="lcd-voices" class="value" style="font-size: 16px;">0</span>
-        </div>
-
-        <!-- VU Output Meters -->
-        <div class="lcd-cell" title="APC: Turn Knob 8 (CC 55) in Master mode for Output Level &amp; Comp Drive" data-apc-hint="APC: Knob 8 (Master) -> Output Level &amp; Glue Comp">
-          <span class="label">OUT VU</span>
-          <div class="vu-meter-box">
-            <div id="vu-meter-l" class="vu-bar"></div>
-            <div id="vu-meter-r" class="vu-bar"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="lcd-bottom-row">
-        <div id="lcd-status-msg" class="status-message">READY // APC KEY 25 READY</div>
-
-        <div style="display: flex; align-items: center; gap: 14px;">
-          <!-- Live Input Meter -->
-          <div style="display: flex; align-items: center; gap: 6px;" title="APC: Live Audio Input VU Peak Meter" data-apc-hint="APC: Live Mic/Line/Tab Audio Input VU Peak Meter">
-            <span style="font-size: 9px; font-weight: bold; color: #7f8c8d;">MIC/IN:</span>
-            <div style="width: 50px; height: 6px; background: #1c2025; border-radius: 2px; overflow: hidden;">
-              <div id="input-vu-bar" style="width: 0%; height: 100%; background: #2ecc71;"></div>
-            </div>
-          </div>
-
-          <!-- MIDI Activity LEDs -->
-          <div class="midi-indicators" title="APC: Real-Time Hardware USB MIDI In/Out Status" data-apc-hint="APC: Real-Time Hardware USB MIDI Activity Indicators">
-            <div class="midi-indicator">
-              <span id="midi-led-in" class="mini-led"></span>
-              <span>MIDI IN</span>
-            </div>
-            <div class="midi-indicator">
-              <span id="midi-led-out" class="mini-led"></span>
-              <span>MIDI OUT</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Song Chain Playlist Bar (PO-33 Chain / FL Studio Blocks) -->
-    <section class="song-chain-bar" title="APC: Arrangement Song Chain Bar" data-apc-hint="APC: Hold ◄ (Note 66) + tap Pad sequence to chain live! Scene 5 appends current.">
-      <div class="chain-header">
-        <span>ARRANGEMENT CHAIN // CLICK TO SELECT PATTERN</span>
-        <div style="display: flex; gap: 6px;">
-          <button id="btn-chain-add" class="btn-tactile" style="padding: 2px 8px; font-size: 9px;" title="APC: Tap Scene 5 (Note 86) to append active pattern to song chain" data-apc-hint="APC: Scene 5 (Note 86) -> Append Pattern to Chain">+ CHAIN</button>
-          <button id="btn-chain-clear" class="btn-tactile" style="padding: 2px 8px; font-size: 9px;" title="APC: Shift + Scene 5 (Note 98 + 86) to reset chain to single loop" data-apc-hint="APC: Shift + Scene 5 (Note 98 + 86) -> Reset Chain">CLR CHAIN</button>
+        <div class="fl-title-actions">
+          <button id="btn-chain-add" class="fl-btn fl-btn-xs" data-apc-ctrl="scene5" title="APC: Tap Scene 5 (Note 86) to append active pattern to song chain" data-apc-hint="APC: Scene 5 (Note 86) -> Append Current Pattern to Chain">+ APPEND</button>
+          <button id="btn-chain-clear" class="fl-btn fl-btn-xs" data-apc-ctrl="shift,scene5" title="APC: Shift + Scene 5 (Note 98 + 86) to reset chain to single loop" data-apc-hint="APC: Shift + Scene 5 (Note 86) -> Reset Arrangement Chain">RESET CHAIN</button>
         </div>
       </div>
       <div id="song-chain-blocks" class="chain-blocks"></div>
     </section>
 
-    <!-- Waveform Visualizer & Sample Editor -->
-    <section class="waveform-section">
-      <canvas id="waveform-canvas" width="1060" height="80" title="APC: Knob 1 (Start Trim) &amp; Knob 2 (End Trim)" data-apc-hint="APC: Knob 1 (Start Trim) &amp; Knob 2 (End Trim)"></canvas>
-      <div class="waveform-toolbar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
-        <div style="display: flex; gap: 6px; align-items: center;">
-          <button id="btn-sample-loop" class="btn-tactile" style="padding: 2px 8px; font-size: 9px;" title="APC: In Sample Mode, toggle continuous sustain loop repeat" data-apc-hint="APC: Sample Mode -> Toggle Sustain Loop Repeat">🔁 LOOP: OFF</button>
-          <button id="btn-stretch-mode" class="btn-tactile" style="padding: 2px 8px; font-size: 9px; color: #ff9f43; border-color: #ff9f43;" title="APC: Shift + Knob 6 (CC 53) or Pad Note 62 toggles Stretch Mode: PITCH ONLY (Constant Time) vs SQUEEZE (Classic Varispeed)" data-apc-hint="APC: Shift + Knob 6 or Pad Note 62 -> Toggle Stretch Mode">⏱ MODE: PITCH ONLY</button>
-          <button id="btn-sample-stretch-half" class="btn-tactile" style="padding: 2px 8px; font-size: 9px;" title="APC: In Sample Mode, pitch-stretch 0.5x faster" data-apc-hint="APC: Sample Mode -> Stretch 0.5x (Faster)">⏱ 0.5x</button>
-          <button id="btn-sample-stretch-double" class="btn-tactile" style="padding: 2px 8px; font-size: 9px;" title="APC: In Sample Mode, pitch-stretch 2.0x slower" data-apc-hint="APC: Sample Mode -> Stretch 2.0x (Slower)">⏱ 2.0x</button>
-          <button id="btn-sample-reverse" class="btn-tactile" style="padding: 2px 8px; font-size: 9px;" title="APC: In Sample Mode, reverse sample buffer" data-apc-hint="APC: Sample Mode -> Reverse Audio Buffer">🔄 REV</button>
-          <button id="btn-sample-normalize" class="btn-tactile" style="padding: 2px 8px; font-size: 9px;" title="APC: In Sample Mode, normalize buffer peak to -0.5 dB" data-apc-hint="APC: Sample Mode -> Peak Normalize to -0.5 dB">⚡ NORM</button>
-          <button id="btn-sample-autoslice" class="btn-tactile" style="padding: 2px 8px; font-size: 9px;" title="APC: Scene 3 (Note 84) auto-slices drum kit into 16 slices" data-apc-hint="APC: Scene 3 (Note 84) -> Auto-Slice Kit into 16">✂ SLICE</button>
+    <!-- FL Studio Channel Rack & Edison Sampler Window -->
+    <section class="fl-window minimal-sequencer-box" id="tour-channel-rack">
+      <div class="fl-window-titlebar">
+        <div class="fl-title-left">
+          <span class="fl-title-dot dot-orange"></span>
+          <span id="seq-grid-title" data-apc-ctrl="row-0,row-1" title="APC: Matrix Rows 1-2 (Notes 24-39) are the 16-step Channel Rack pads" data-apc-hint="APC: Matrix Rows 1-2 (Notes 24-39) -> 16 Channel Rack Step Pads">CHANNEL RACK // P1 (16 STEPS, PAGE 1/1)</span>
         </div>
-        <div style="font-size: 9px; color: #828997;">
-          <span>DRAG TRIM HANDLES // CLICK SLICES FOR DRUM KITS</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Touch Step Grid (with 2x/4x Zoom & Page Navigation) -->
-    <section class="minimal-sequencer-box">
-      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: bold; color: #828997; flex-wrap: wrap; gap: 6px;">
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span id="seq-grid-title" title="APC: Matrix Rows 1-2 (Notes 24-39) are 16-step Channel Rack pads" data-apc-hint="APC: Matrix Rows 1-2 (Notes 24-39) -> 16 Channel Rack Steps">CHANNEL RACK // ACTIVE SLOT</span>
-          <span style="color: #18dcff; margin-left: 6px;">ZOOM:</span>
-          <button id="btn-zoom-1x" class="btn-tactile btn-zoom active" data-zoom="1" style="padding: 2px 6px; font-size: 9px;" title="APC: Shift + Knob 1 (0-31) or Shift + Pad 10 (Note 25) -> 1X (16th notes)" data-apc-hint="APC: Shift + Knob 1 or Shift + Pad 10 -> 1X (16th notes)">1X (16)</button>
-          <button id="btn-zoom-2x" class="btn-tactile btn-zoom" data-zoom="2" style="padding: 2px 6px; font-size: 9px;" title="APC: Shift + Knob 1 (32-63) or Shift + Pad 10 (Note 25) -> 2X (32nd notes, 2 pages)" data-apc-hint="APC: Shift + Knob 1 or Shift + Pad 10 -> 2X (32nd notes)">2X (32)</button>
-          <button id="btn-zoom-4x" class="btn-tactile btn-zoom" data-zoom="4" style="padding: 2px 6px; font-size: 9px;" title="APC: Shift + Knob 1 (64-95) or Shift + Pad 10 (Note 25) -> 4X (64th notes, 4 pages)" data-apc-hint="APC: Shift + Knob 1 or Shift + Pad 10 -> 4X (64th notes)">4X (64)</button>
-          <button id="btn-zoom-8x" class="btn-tactile btn-zoom" data-zoom="8" style="padding: 2px 6px; font-size: 9px;" title="APC: Shift + Knob 1 (96-127) or Shift + Pad 10 (Note 25) -> 8X (128th notes, 8 pages)" data-apc-hint="APC: Shift + Knob 1 or Shift + Pad 10 -> 8X (128th notes)">8X (128)</button>
-          <div id="seq-pages-group" style="display: inline-flex; gap: 4px; margin-left: 6px;">
-            <button id="btn-page-1" class="btn-tactile btn-page active" data-page="0" style="padding: 2px 6px; font-size: 9px; display: none;" title="APC: Tap ▲ / ▼ or Shift + Knob 2 to scroll pages" data-apc-hint="APC: Tap ▲ / ▼ or Shift + Knob 2 -> Scroll Pages">P1</button>
-            <button id="btn-page-2" class="btn-tactile btn-page" data-page="1" style="padding: 2px 6px; font-size: 9px; display: none;" title="APC: Tap ▲ / ▼ or Shift + Knob 2 to scroll pages" data-apc-hint="APC: Tap ▲ / ▼ or Shift + Knob 2 -> Scroll Pages">P2</button>
-            <button id="btn-page-3" class="btn-tactile btn-page" data-page="2" style="padding: 2px 6px; font-size: 9px; display: none;" title="APC: Tap ▲ / ▼ or Shift + Knob 2 to scroll pages" data-apc-hint="APC: Tap ▲ / ▼ or Shift + Knob 2 -> Scroll Pages">P3</button>
-            <button id="btn-page-4" class="btn-tactile btn-page" data-page="3" style="padding: 2px 6px; font-size: 9px; display: none;" title="APC: Tap ▲ / ▼ or Shift + Knob 2 to scroll pages" data-apc-hint="APC: Tap ▲ / ▼ or Shift + Knob 2 -> Scroll Pages">P4</button>
-            <button id="btn-page-5" class="btn-tactile btn-page" data-page="4" style="padding: 2px 6px; font-size: 9px; display: none;" title="APC: Tap ▲ / ▼ or Shift + Knob 2 to scroll pages" data-apc-hint="APC: Tap ▲ / ▼ or Shift + Knob 2 -> Scroll Pages">P5</button>
-            <button id="btn-page-6" class="btn-tactile btn-page" data-page="5" style="padding: 2px 6px; font-size: 9px; display: none;" title="APC: Tap ▲ / ▼ or Shift + Knob 2 to scroll pages" data-apc-hint="APC: Tap ▲ / ▼ or Shift + Knob 2 -> Scroll Pages">P6</button>
-            <button id="btn-page-7" class="btn-tactile btn-page" data-page="6" style="padding: 2px 6px; font-size: 9px; display: none;" title="APC: Tap ▲ / ▼ or Shift + Knob 2 to scroll pages" data-apc-hint="APC: Tap ▲ / ▼ or Shift + Knob 2 -> Scroll Pages">P7</button>
-            <button id="btn-page-8" class="btn-tactile btn-page" data-page="7" style="padding: 2px 6px; font-size: 9px; display: none;" title="APC: Tap ▲ / ▼ or Shift + Knob 2 to scroll pages" data-apc-hint="APC: Tap ▲ / ▼ or Shift + Knob 2 -> Scroll Pages">P8</button>
+        <div class="fl-title-actions">
+          <span class="fl-mini-tag">GRID ZOOM</span>
+          <button id="btn-zoom-1x" class="fl-btn fl-btn-xs btn-zoom active" data-zoom="1" data-apc-ctrl="shift,knob-0,pad-1-1" title="APC: Shift + Knob 1 (CC 48) or Shift + Pad 10 (Note 25) -> 1X (16th notes)" data-apc-hint="APC: Shift + Knob 1 or Shift + Pad 10 -> 1X (16 Steps / 16th)">1X (16)</button>
+          <button id="btn-zoom-2x" class="fl-btn fl-btn-xs btn-zoom" data-zoom="2" data-apc-ctrl="shift,knob-0,pad-1-1" title="APC: Shift + Knob 1 (CC 48) or Shift + Pad 10 (Note 25) -> 2X (32nd notes)" data-apc-hint="APC: Shift + Knob 1 or Shift + Pad 10 -> 2X (32 Steps / 32nd)">2X (32)</button>
+          <button id="btn-zoom-4x" class="fl-btn fl-btn-xs btn-zoom" data-zoom="4" data-apc-ctrl="shift,knob-0,pad-1-1" title="APC: Shift + Knob 1 (CC 48) or Shift + Pad 10 (Note 25) -> 4X (64th notes)" data-apc-hint="APC: Shift + Knob 1 or Shift + Pad 10 -> 4X (64 Steps / 64th)">4X (64)</button>
+          <button id="btn-zoom-8x" class="fl-btn fl-btn-xs btn-zoom" data-zoom="8" data-apc-ctrl="shift,knob-0,pad-1-1" title="APC: Shift + Knob 1 (CC 48) or Shift + Pad 10 (Note 25) -> 8X (128th notes)" data-apc-hint="APC: Shift + Knob 1 or Shift + Pad 10 -> 8X (128 Steps / 128th)">8X (128)</button>
+          <div id="seq-pages-group" class="fl-page-tabs">
+            <button id="btn-page-1" class="fl-btn fl-btn-xs btn-page active" data-page="0" data-apc-ctrl="shift,knob-1,track-0,track-1" style="display: none;">P1</button>
+            <button id="btn-page-2" class="fl-btn fl-btn-xs btn-page" data-page="1" data-apc-ctrl="shift,knob-1,track-0,track-1" style="display: none;">P2</button>
+            <button id="btn-page-3" class="fl-btn fl-btn-xs btn-page" data-page="2" data-apc-ctrl="shift,knob-1,track-0,track-1" style="display: none;">P3</button>
+            <button id="btn-page-4" class="fl-btn fl-btn-xs btn-page" data-page="3" data-apc-ctrl="shift,knob-1,track-0,track-1" style="display: none;">P4</button>
+            <button id="btn-page-5" class="fl-btn fl-btn-xs btn-page" data-page="4" data-apc-ctrl="shift,knob-1,track-0,track-1" style="display: none;">P5</button>
+            <button id="btn-page-6" class="fl-btn fl-btn-xs btn-page" data-page="5" data-apc-ctrl="shift,knob-1,track-0,track-1" style="display: none;">P6</button>
+            <button id="btn-page-7" class="fl-btn fl-btn-xs btn-page" data-page="6" data-apc-ctrl="shift,knob-1,track-0,track-1" style="display: none;">P7</button>
+            <button id="btn-page-8" class="fl-btn fl-btn-xs btn-page" data-page="7" data-apc-ctrl="shift,knob-1,track-0,track-1" style="display: none;">P8</button>
           </div>
-        </div>
-        <div style="display: flex; gap: 6px; align-items: center;">
-          <button id="btn-toggle-follow" class="btn-tactile" style="padding: 2px 8px; font-size: 9px; color: #26de81;" title="APC: Shift + Pad 16 (Note 31) -> Auto-scroll display page to follow playhead" data-apc-hint="APC: Shift + Pad 16 (Note 31) -> Toggle Follow Playhead">FOLLOW: ON</button>
-          <button id="btn-clear-track" class="btn-tactile" style="padding: 2px 8px; font-size: 9px;" title="APC: Shift + Pad 1 (Note 32) clears track steps" data-apc-hint="APC: Shift + Pad 1 (Note 32) -> Clear Track Steps">CLEAR TRACK</button>
+          <span class="toolbar-sep-sm"></span>
+          <button id="btn-toggle-follow" class="fl-btn fl-btn-xs is-active" data-apc-ctrl="shift,pad-1-7" title="APC: Shift + Pad 16 (Note 31) -> Auto-scroll page with playhead" data-apc-hint="APC: Shift + Pad 16 (Note 31) -> Toggle Playhead Page Follow">FOLLOW: ON</button>
+          <button id="btn-clear-track" class="fl-btn fl-btn-xs" data-apc-ctrl="shift,pad-0-0" title="APC: Shift + Pad 1 (Note 32) -> Clear Active Track Steps" data-apc-hint="APC: Shift + Pad 1 (Note 32) -> Clear Active Track Steps">CLEAR</button>
         </div>
       </div>
+
+      <!-- Active Channel Instrument & 60-Preset Browser Bar -->
+      <div class="fl-channel-bar" id="tour-samples">
+        <div class="channel-picker-group">
+          <span class="fl-mini-tag">TRACK</span>
+          <button id="btn-slot-prev" class="fl-btn fl-btn-xs" data-apc-ctrl="track-0" title="APC: ▲ Button (Note 64) -> Previous Track Slot" data-apc-hint="APC: ▲ Button (Note 64) -> Select Previous Track">◀</button>
+          <button id="btn-slot-next" class="fl-btn fl-btn-xs" data-apc-ctrl="track-1" title="APC: ▼ Button (Note 65) -> Next Track Slot" data-apc-hint="APC: ▼ Button (Note 65) -> Select Next Track">▶</button>
+        </div>
+
+        <div class="channel-picker-group preset-picker-group">
+          <span class="fl-mini-tag">SAMPLE / PRESET (60)</span>
+          <button id="btn-preset-prev" class="fl-btn fl-btn-xs" data-apc-ctrl="shift,track-1" title="APC: Shift + ▼ (Note 98 + 65) -> Previous Factory Preset" data-apc-hint="APC: Shift + ▼ (Note 65) -> Previous Sample Preset">◀</button>
+          <select id="select-slot-preset" class="fl-select" data-apc-ctrl="shift,track-0,track-1" title="APC: Hold Shift + ▲ / ▼ to cycle all 46 Melodic Instruments &amp; 14 Drum Kits" data-apc-hint="APC: Shift + ▲ / ▼ -> Cycle All 60 Melodic & Drum Presets"></select>
+          <button id="btn-preset-next" class="fl-btn fl-btn-xs" data-apc-ctrl="shift,track-0" title="APC: Shift + ▲ (Note 98 + 64) -> Next Factory Preset" data-apc-hint="APC: Shift + ▲ (Note 64) -> Next Sample Preset">▶</button>
+          <button id="btn-audition-sample" class="fl-btn fl-btn-xs btn-accent-orange" data-apc-ctrl="keys" title="APC: Play Ch 2 Piano Keys (or Sample Mode Pad 40) to audition active sound" data-apc-hint="APC: 25-Key Piano Keybed (Ch 2) -> Play / Audition Active Sample">▶ AUDITION</button>
+        </div>
+      </div>
+
+      <!-- Iconic FL Studio Alternating 4-Step Channel Rack Chicklets -->
       <div id="touch-step-grid" class="step-grid-16"></div>
 
-      <!-- Step Inspector & 128th Micro-Timing Nudge Bar -->
-      <div id="step-inspector" class="step-inspector-box" style="display: flex; justify-content: space-between; align-items: center; background: #16191f; border: 1px solid #282d37; border-radius: 4px; padding: 6px 12px; margin-top: 8px; font-size: 11px;">
-        <div id="step-inspector-info" style="color: #abb2bf;">
-          <span style="color: #26de81; font-weight: bold;">STEP INSPECTOR:</span> <span id="step-inspector-text">Select or hold a step pad on APC Key 25 to inspect and nudge 128th-note micro-timing</span>
+      <!-- Step Micro-Timing Inspector & 128th Nudge Bar -->
+      <div id="step-inspector" class="step-inspector-box">
+        <div id="step-inspector-info">
+          <span class="inspector-tag">STEP INSPECTOR</span>
+          <span id="step-inspector-text">Click or hold a step pad on APC Key 25 to inspect &amp; nudge 128th-note timing</span>
         </div>
-        <div id="step-inspector-actions" style="display: flex; gap: 6px; align-items: center;">
-          <button id="btn-nudge-prev" class="btn-tactile" style="padding: 2px 8px; font-size: 10px;" title="APC: Shift + Pad 11 (Note 26) or Hold Step + Shift + Knob 3 CCW -> Nudge -1/128th note" data-apc-hint="APC: Shift + Pad 11 (Note 26) or Hold Step + Shift + K3 CCW -> Nudge -1/128th">◄ -1/128th</button>
-          <button id="btn-nudge-next" class="btn-tactile" style="padding: 2px 8px; font-size: 10px;" title="APC: Shift + Pad 12 (Note 27) or Hold Step + Shift + Knob 3 CW -> Nudge +1/128th note" data-apc-hint="APC: Shift + Pad 12 (Note 27) or Hold Step + Shift + K3 CW -> Nudge +1/128th">+1/128th ►</button>
+        <div id="step-inspector-actions">
+          <button id="btn-nudge-prev" class="fl-btn fl-btn-xs" data-apc-ctrl="shift,pad-1-2,knob-2" title="APC: Shift + Pad 11 (Note 26) or Hold Step + Shift + Knob 3 CCW -> Nudge -1/128th" data-apc-hint="APC: Shift + Pad 11 (Note 26) or Hold Step + Shift+K3 CCW -> -1/128th">◄ -1/128th</button>
+          <button id="btn-nudge-next" class="fl-btn fl-btn-xs" data-apc-ctrl="shift,pad-1-3,knob-2" title="APC: Shift + Pad 12 (Note 27) or Hold Step + Shift + Knob 3 CW -> Nudge +1/128th" data-apc-hint="APC: Shift + Pad 12 (Note 27) or Hold Step + Shift+K3 CW -> +1/128th">+1/128th ►</button>
+        </div>
+      </div>
+
+      <!-- Integrated Edison-Style Waveform Sampler Panel -->
+      <div class="waveform-section">
+        <canvas id="waveform-canvas" width="1060" height="76" data-apc-ctrl="knob-0,knob-1" title="APC: Knob 1 (Trim Start) &amp; Knob 2 (Trim End) | Click waveform/slices to audition" data-apc-hint="APC: Knob 1 (Start Trim) & Knob 2 (End Trim) | Click Slices to Audition"></canvas>
+        <div class="waveform-toolbar">
+          <div class="waveform-tools-left">
+            <button id="btn-sample-loop" class="fl-btn fl-btn-xs" data-apc-ctrl="shift,scene1" title="Toggle continuous sustain looping between Start and End trim markers" data-apc-hint="Toggle Sustain Loop Repeat between Trim Start & End">LOOP: OFF</button>
+            <button id="btn-stretch-mode" class="fl-btn fl-btn-xs is-active" data-apc-ctrl="shift,knob-5" title="APC: Shift + Knob 6 (CC 53) or Sample Mode Pad 39 -> PITCH ONLY (Constant Time) vs SQUEEZE (Varispeed)" data-apc-hint="APC: Shift + Knob 6 (CC 53) -> Toggle PITCH ONLY vs SQUEEZE">STRETCH: PITCH ONLY</button>
+            <button id="btn-sample-stretch-half" class="fl-btn fl-btn-xs" title="Granular Overlap-Add Time-Stretch 0.5x (2x faster, preserves pitch)" data-apc-hint="Granular Time-Stretch 0.5x Faster (Pitch Preserved)">0.5X TIME</button>
+            <button id="btn-sample-stretch-double" class="fl-btn fl-btn-xs" title="Granular Overlap-Add Time-Stretch 2.0x (2x slower, preserves pitch)" data-apc-hint="Granular Time-Stretch 2.0x Slower (Pitch Preserved)">2.0X TIME</button>
+            <button id="btn-sample-reverse" class="fl-btn fl-btn-xs" data-apc-ctrl="shift,scene1,pad-4-2" title="APC: Sample Mode Row 5 Pad 3 (Note 2) -> Reverse sample audio buffer" data-apc-hint="APC: Sample Mode Pad 35 (Note 2) -> Reverse Audio Buffer">REVERSE</button>
+            <button id="btn-sample-normalize" class="fl-btn fl-btn-xs" data-apc-ctrl="shift,scene1,pad-4-3" title="APC: Sample Mode Row 5 Pad 4 (Note 3) -> Peak Normalize buffer to -0.5 dB" data-apc-hint="APC: Sample Mode Pad 36 (Note 3) -> Peak Normalize (-0.5 dB)">NORMALIZE</button>
+            <button id="btn-sample-autoslice" class="fl-btn fl-btn-xs" data-apc-ctrl="scene3" title="APC: Scene 3 (Note 84) -> Auto-Slice drum buffer into 16 slices" data-apc-hint="APC: Scene 3 (Note 84) -> Transient Auto-Slice into 16 Hits">AUTO-SLICE</button>
+          </div>
+          <span class="waveform-hint-txt">CLICK WAVEFORM / SLICES TO AUDITION &nbsp;|&nbsp; DROP WAV / MP3 TO LOAD</span>
         </div>
       </div>
     </section>
 
-    <!-- 16-Track Layering Multitrack Mixer & Master DSP Rack -->
-    <section id="mixer-rack-section" class="mixer-rack-panel">
-      <div class="mixer-rack-header">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="mixer-title">16-TRACK MULTITRACK MIXER // 16 SIMULTANEOUS INSTRUMENTS</span>
-          <span class="mixer-badge">8 MELODIC + 8 DRUM KITS</span>
+    <!-- FL Studio 16-Track Insert Mixer & Master FX Insert Rack -->
+    <section id="mixer-rack-section" class="fl-window mixer-rack-panel">
+      <div class="fl-window-titlebar mixer-rack-header">
+        <div class="fl-title-left">
+          <span class="fl-title-dot dot-green"></span>
+          <span class="mixer-title">MIXER — 16 INSERT CHANNELS (8 MELODIC + 8 DRUM KITS)</span>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <span style="font-size: 10px; color: #828997;">APC TRACK BUTTONS (NOTES 64-71) = MUTES</span>
-          <button id="btn-toggle-mixer" class="btn-tactile" style="font-size: 9px; padding: 2px 8px;" title="APC: Collapse or Expand 16-Track Multitrack Mixer Panel" data-apc-hint="APC: Collapse/Expand Multitrack Mixer">COLLAPSE / EXPAND</button>
+        <div class="fl-title-actions">
+          <span class="fl-mini-tag">TRACK BTNS (64-71) = MUTE &nbsp;|&nbsp; SHIFT + PAD 13/14/15 = SIDECHAIN</span>
+          <button id="btn-toggle-mixer" class="fl-btn fl-btn-xs" title="Collapse or Expand Mixer Window" data-apc-hint="Collapse or Expand 16-Track Insert Mixer">COLLAPSE</button>
         </div>
       </div>
 
       <div id="mixer-strips-container" class="mixer-strips-scroll"></div>
 
-      <!-- Master DSP Rack -->
-      <div class="dsp-rack-panel">
-        <div class="dsp-rack-title">MASTER BUS DSP &amp; PERFORMANCE FX CHAIN</div>
+      <!-- Master FX Insert Slots Rack -->
+      <div class="dsp-rack-panel" id="tour-sidechain">
         <div class="dsp-rack-modules">
-          <!-- PO-Style Dual Filter -->
-          <div class="dsp-module" id="dsp-module-filter" title="APC: Knob 4 (CC 51) Dual PO Filter &amp; Knob 5 (CC 52) Res Q" data-apc-hint="APC: Knob 4 (Dual Filter) &amp; Knob 5 (Res Q)">
-            <div class="dsp-mod-title">PO DUAL FILTER</div>
+          <!-- Slot 1: PO Dual Filter -->
+          <div class="dsp-module" id="dsp-module-filter" data-apc-ctrl="knob-3,knob-4" title="APC: Knob 4 (CC 51) Dual PO Filter &amp; Knob 5 (CC 52) Resonance Q" data-apc-hint="APC: Knob 4 (CC 51) -> Dual PO Filter | Knob 5 (CC 52) -> Res Q">
+            <div class="dsp-mod-title">SLOT 1 // PO DUAL FILTER</div>
             <div class="dsp-mod-readout" id="dsp-filter-readout">BYPASS (CENTER 64)</div>
-            <div class="dsp-mod-sub">K4: Sweep LPF &lt; 64 &gt; HPF | K5: Res Q</div>
+            <div class="dsp-mod-sub">K4: LPF &lt; 64 &gt; HPF | K5: Q</div>
           </div>
 
-          <!-- Sidechain Ducking Compressor -->
-          <div class="dsp-module" id="dsp-module-sidechain" title="APC: Shift + Pad 13 (Toggle) | Shift + Pad 14 (Track Duck) | Shift + Pad 15 (Set Trigger) | Master Knobs 7 &amp; 8 (Rel &amp; Depth)" data-apc-hint="APC: Shift+Pad 13 (ON/OFF) | Shift+Pad 14 (Duck) | Shift+Pad 15 (Src) | Master K7/K8">
-            <div class="dsp-mod-title" style="display: flex; justify-content: space-between; align-items: center;">
-              <span>SIDECHAIN DUCK</span>
-              <button id="btn-sidechain-toggle" class="btn-tactile" style="padding: 1px 5px; font-size: 8px; color: #26de81; border-color: #26de81;" title="APC: Shift + Pad 13 (Note 28) -> Toggle Master Sidechain Ducking" data-apc-hint="APC: Shift + Pad 13 (Note 28) -> Toggle Master Sidechain Ducking">ON</button>
+          <!-- Slot 2: Sidechain Ducking Compressor -->
+          <div class="dsp-module" id="dsp-module-sidechain" data-apc-ctrl="shift,pad-1-4,pad-1-5,pad-1-6,knob-6,knob-7" title="APC: Shift+Pad 13 (ON/OFF) | Shift+Pad 14 (Track Duck D) | Shift+Pad 15 (Set Source SC) | Master K7/K8" data-apc-hint="APC: Shift+Pad 13/14/15 -> Sidechain | Master K7: Rel, K8: Depth">
+            <div class="dsp-mod-title dsp-title-flex">
+              <span>SLOT 2 // SIDECHAIN DUCK</span>
+              <button id="btn-sidechain-toggle" class="fl-btn fl-btn-xxs is-active" data-apc-ctrl="shift,pad-1-4" title="APC: Shift + Pad 13 (Note 28) -> Toggle Master Sidechain Ducking" data-apc-hint="APC: Shift + Pad 13 (Note 28) -> Toggle Master Sidechain ON/OFF">ON</button>
             </div>
             <div class="comp-meter-wrapper">
-              <span style="font-size: 9px; color: #abb2bf;">DUCK:</span>
-              <div class="comp-meter-bar"><div id="sidechain-duck-fill" style="width: 0%; height: 100%; background: #00cec9; transition: width 0.05s ease;"></div></div>
+              <span>DUCK</span>
+              <div class="comp-meter-bar"><div id="sidechain-duck-fill"></div></div>
             </div>
-            <div class="dsp-mod-readout" id="dsp-sidechain-readout">DEPTH: 65% // REL: 180ms</div>
-            <div class="dsp-mod-sub">SRC: TRACK 9 (KICK) | K7: Rel, K8: Depth</div>
+            <div class="dsp-mod-readout" id="dsp-sidechain-readout">DEPTH: 65% // REL: 180ms // SRC: T9</div>
           </div>
 
-          <!-- Master Dynamics Glue Compressor -->
-          <div class="dsp-module" id="dsp-module-comp" title="APC: Master Knob 8 Master Glue Compressor Drive &amp; Makeup Gain" data-apc-hint="APC: Master Knob 8 -> Glue Comp Drive">
-            <div class="dsp-mod-title">GLUE COMPRESSOR</div>
+          <!-- Slot 3: Master Glue Compressor -->
+          <div class="dsp-module" id="dsp-module-comp" data-apc-ctrl="track-7,knob-7" title="APC: Master Bank Knob 8 (CC 55) -> Glue Compressor Drive &amp; Master Volume" data-apc-hint="APC: DEVICE -> Master Bank Knob 8 -> Glue Comp Drive & Vol">
+            <div class="dsp-mod-title">SLOT 3 // GLUE COMP</div>
             <div class="comp-meter-wrapper">
-              <span style="font-size: 9px; color: #abb2bf;">GR:</span>
+              <span>GR</span>
               <div class="comp-meter-bar"><div id="comp-gr-fill"></div></div>
             </div>
             <div class="dsp-mod-readout" id="dsp-comp-readout">RATIO 4:1 // THRESH -18dB</div>
-            <div class="dsp-mod-sub">Master Glue Comp Drive &amp; Vol</div>
           </div>
 
-          <!-- Space Delay -->
-          <div class="dsp-module" id="dsp-module-delay" title="APC: Knob 7 (CC 54) FX Send; in Master mode Knobs 6 &amp; 7 set Time &amp; Feedback" data-apc-hint="APC: Knob 7 (FX Send) | Master Knobs 6 &amp; 7 (Delay)">
-            <div class="dsp-mod-title">SPACE DELAY</div>
+          <!-- Slot 4: Dub Space Delay -->
+          <div class="dsp-module" id="dsp-module-delay" data-apc-ctrl="knob-6,shift,knob-5" title="APC: Track Knob 7 (Send) | Master Knob 6 (Time) | Shift + Knob 7 (Feedback)" data-apc-hint="APC: Track K7 -> Delay Send | Master K6 -> Time | Shift+K7 -> Feedback">
+            <div class="dsp-mod-title">SLOT 4 // DUB DELAY</div>
             <div class="dsp-mod-readout" id="dsp-delay-readout">SEND: 0%</div>
-            <div class="dsp-mod-sub">K7: Space Delay Send</div>
+            <div class="dsp-mod-sub">Butterworth Warm Tape Echo</div>
           </div>
 
-          <!-- Punch-In Performance FX Bank -->
-          <div class="dsp-module" id="dsp-module-fx" style="flex: 1.5;" title="APC: Matrix Row 5 Pads (Notes 0-7) trigger real-time Punch-In FX" data-apc-hint="APC: Matrix Row 5 Pads (Notes 0-7) -> Punch-In FX">
-            <div class="dsp-mod-title">PUNCH-IN PERFORMANCE FX (ROW 5 PADS 0-7)</div>
+          <!-- Slot 5: Punch-In Performance FX Bank -->
+          <div class="dsp-module dsp-module-fx" id="dsp-module-fx" data-apc-ctrl="row-4" title="APC: Matrix Row 5 Pads (Notes 0-7) -> Hold for Live Punch-In FX" data-apc-hint="APC: Matrix Row 5 Pads (Notes 0-7) -> Hold for Live Punch-In FX">
+            <div class="dsp-mod-title">SLOT 5 // PUNCH-IN PERFORMANCE FX (ROW 5 PADS 0-7)</div>
             <div class="dsp-fx-badges" id="dsp-fx-badges">
-              <span class="fx-badge" data-fx="0" title="APC: Hold Matrix Row 5 Pad 1 (Note 0) for 1/8 Stutter Beat Freeze" data-apc-hint="APC: Matrix Row 5 Pad 1 -> 1/8 Stutter">1.STUTTER</span>
-              <span class="fx-badge" data-fx="1" title="APC: Hold Matrix Row 5 Pad 2 (Note 1) for 1/16 Beat Roll" data-apc-hint="APC: Matrix Row 5 Pad 2 -> 1/16 Beat Roll">2.ROLL 1/16</span>
-              <span class="fx-badge" data-fx="2" title="APC: Hold Matrix Row 5 Pad 3 (Note 2) for 12-Bit SP-1200 Bitcrush" data-apc-hint="APC: Matrix Row 5 Pad 3 -> 12-Bit SP-1200">3.12-BIT CRUSH</span>
-              <span class="fx-badge" data-fx="3" title="APC: Hold Matrix Row 5 Pad 4 (Note 3) for Turntable Vinyl Brake / Tape Stop" data-apc-hint="APC: Matrix Row 5 Pad 4 -> Vinyl Brake">4.VINYL BRAKE</span>
-              <span class="fx-badge" data-fx="4" title="APC: Hold Matrix Row 5 Pad 5 (Note 4) for Resonant HPF Sweep" data-apc-hint="APC: Matrix Row 5 Pad 5 -> Resonant HPF">5.HPF SWEEP</span>
-              <span class="fx-badge" data-fx="5" title="APC: Hold Matrix Row 5 Pad 6 (Note 5) for Resonant LPF Sub-Drop" data-apc-hint="APC: Matrix Row 5 Pad 6 -> Resonant LPF">6.LPF DROP</span>
-              <span class="fx-badge" data-fx="6" title="APC: Hold Matrix Row 5 Pad 7 (Note 6) for French House Sidechain Pump" data-apc-hint="APC: Matrix Row 5 Pad 7 -> Sidechain Duck Pump">7.SC PUMP</span>
-              <span class="fx-badge" data-fx="7" title="APC: Hold Matrix Row 5 Pad 8 (Note 7) for Dub Space Echo Wash" data-apc-hint="APC: Matrix Row 5 Pad 8 -> Dub Space Echo">8.DUB ECHO</span>
+              <span class="fx-badge" data-fx="0" data-apc-ctrl="pad-4-0" title="APC: Hold Row 5 Pad 1 (Note 0) -> 1/8 Stutter" data-apc-hint="APC: Row 5 Pad 1 (Note 0) -> 1/8 Stutter">1.STUTTER</span>
+              <span class="fx-badge" data-fx="1" data-apc-ctrl="pad-4-1" title="APC: Hold Row 5 Pad 2 (Note 1) -> 1/16 Beat Roll" data-apc-hint="APC: Row 5 Pad 2 (Note 1) -> 1/16 Beat Roll">2.ROLL 1/16</span>
+              <span class="fx-badge" data-fx="2" data-apc-ctrl="pad-4-2" title="APC: Hold Row 5 Pad 3 (Note 2) -> 12-Bit SP-1200 Crush" data-apc-hint="APC: Row 5 Pad 3 (Note 2) -> 12-Bit SP-1200">3.SP-1200</span>
+              <span class="fx-badge" data-fx="3" data-apc-ctrl="pad-4-3" title="APC: Hold Row 5 Pad 4 (Note 3) -> Vinyl Brake Stop" data-apc-hint="APC: Row 5 Pad 4 (Note 3) -> Vinyl Brake">4.BRAKE</span>
+              <span class="fx-badge" data-fx="4" data-apc-ctrl="pad-4-4" title="APC: Hold Row 5 Pad 5 (Note 4) -> Resonant HPF Sweep" data-apc-hint="APC: Row 5 Pad 5 (Note 4) -> HPF Sweep">5.HPF SWP</span>
+              <span class="fx-badge" data-fx="5" data-apc-ctrl="pad-4-5" title="APC: Hold Row 5 Pad 6 (Note 5) -> Resonant LPF Sub-Drop" data-apc-hint="APC: Row 5 Pad 6 (Note 5) -> LPF Sub-Drop">6.LPF DROP</span>
+              <span class="fx-badge" data-fx="6" data-apc-ctrl="pad-4-6" title="APC: Hold Row 5 Pad 7 (Note 6) -> French House Sidechain Pump" data-apc-hint="APC: Row 5 Pad 7 (Note 6) -> Sidechain Pump">7.SC PUMP</span>
+              <span class="fx-badge" data-fx="7" data-apc-ctrl="pad-4-7" title="APC: Hold Row 5 Pad 8 (Note 7) -> Dub Space Echo Wash" data-apc-hint="APC: Row 5 Pad 8 (Note 7) -> Dub Space Echo">8.DUB ECHO</span>
             </div>
-            <div class="dsp-mod-sub">Hold pad to engage live performance punch-in effect</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Debug & Hardware Section (Toggled in Minimal vs Debug View) -->
+    <!-- Hardware Surface & Piano Keybed Section (Toggled in Minimal vs Studio View) -->
     <div id="debug-hardware-section">
-      <!-- 8 Macro Knobs (Continuous CCs 48-55) -->
-      <section class="knobs-container">
-        <div class="macro-knob" data-knob="0" title="APC: Knob 1 (CC 48) -> Sample Start Trim (or P-Lock on held step)" data-apc-hint="APC: Knob 1 (CC 48) -> Sample Start Trim (Track) / Master BPM (Master)">
-          <div class="knob-cap"><div class="knob-indicator"></div></div>
-          <span class="knob-label">1: Start</span>
-          <span class="knob-val">0</span>
+      <!-- 8 Continuous Macro Knobs (CC 48-55) -->
+      <section class="fl-window knobs-window" id="tour-knobs">
+        <div class="fl-window-titlebar">
+          <div class="fl-title-left">
+            <span class="fl-title-dot dot-orange"></span>
+            <span>APC KEY 25 — 8 CONTINUOUS MACRO KNOBS (CC 48–55)</span>
+          </div>
+          <span class="fl-mini-tag">HOLD STEP + TURN KNOB = P-LOCK &nbsp;|&nbsp; DEVICE (71) = TRACK / MASTER BANK</span>
         </div>
-
-        <div class="macro-knob" data-knob="1" title="APC: Knob 2 (CC 49) -> Sample End Trim (or P-Lock on held step)" data-apc-hint="APC: Knob 2 (CC 49) -> Sample End Trim (Track) / Master Swing (Master)">
-          <div class="knob-cap"><div class="knob-indicator"></div></div>
-          <span class="knob-label">2: End</span>
-          <span class="knob-val">127</span>
-        </div>
-
-        <div class="macro-knob" data-knob="2" title="APC: Knob 3 (CC 50) -> Pitch Tuning -24..+24 ST (or P-Lock on held step)" data-apc-hint="APC: Knob 3 (CC 50) -> Pitch Tuning (Track) / Master Tune (Master)">
-          <div class="knob-cap"><div class="knob-indicator"></div></div>
-          <span class="knob-label">3: Pitch</span>
-          <span class="knob-val">64</span>
-        </div>
-
-        <div class="macro-knob" data-knob="3" title="APC: Knob 4 (CC 51) -> PO Dual LPF/HPF (or P-Lock on held step)" data-apc-hint="APC: Knob 4 (CC 51) -> Dual PO Filter (Track) / Master Filter (Master)">
-          <div class="knob-cap"><div class="knob-indicator"></div></div>
-          <span class="knob-label">4: Filter</span>
-          <span class="knob-val">64</span>
-        </div>
-
-        <div class="macro-knob" data-knob="4" title="APC: Knob 5 (CC 52) -> Filter Resonance Q" data-apc-hint="APC: Knob 5 (CC 52) -> Filter Resonance Q (Track / Master)">
-          <div class="knob-cap"><div class="knob-indicator"></div></div>
-          <span class="knob-label">5: Res Q</span>
-          <span class="knob-val">20</span>
-        </div>
-
-        <div class="macro-knob" data-knob="5" title="APC: Knob 6 (CC 53) -> Amp Envelope Decay Time (or P-Lock on held step)" data-apc-hint="APC: Knob 6 (CC 53) -> Decay Time (Track) / Space Delay Time (Master)">
-          <div class="knob-cap"><div class="knob-indicator"></div></div>
-          <span class="knob-label">6: Decay</span>
-          <span class="knob-val">48</span>
-        </div>
-
-        <div class="macro-knob" data-knob="6" title="APC: Knob 7 (CC 54) -> Space Delay FX Send" data-apc-hint="APC: Knob 7 (CC 54) -> Space Delay FX Send (Track) / Delay Feedback (Master)">
-          <div class="knob-cap"><div class="knob-indicator"></div></div>
-          <span class="knob-label">7: FX Send</span>
-          <span class="knob-val">0</span>
-        </div>
-
-        <div class="macro-knob" data-knob="7" title="APC: Knob 8 (CC 55) -> Track Level / Drive" data-apc-hint="APC: Knob 8 (CC 55) -> Track Level (Track) / Master Glue Comp &amp; Vol (Master)">
-          <div class="knob-cap"><div class="knob-indicator"></div></div>
-          <span class="knob-label">8: Comp Vol</span>
-          <span class="knob-val">75</span>
+        <div class="knobs-container">
+          <div class="macro-knob" data-knob="0" data-apc-ctrl="knob-0" title="APC: Knob 1 (CC 48) -> Trim Start (Track) / BPM (Master) / Zoom 1X-8X (Shift)" data-apc-hint="APC: Knob 1 (CC 48) -> Trim Start | Master: BPM | Shift: Zoom 1X-8X">
+            <div class="knob-cap"><div class="knob-indicator"></div></div>
+            <span class="knob-label">1: Start</span>
+            <span class="knob-val">0</span>
+          </div>
+          <div class="macro-knob" data-knob="1" data-apc-ctrl="knob-1" title="APC: Knob 2 (CC 49) -> Trim End (Track) / Swing (Master) / Page P1-P8 (Shift)" data-apc-hint="APC: Knob 2 (CC 49) -> Trim End | Master: Swing | Shift: Page P1-P8">
+            <div class="knob-cap"><div class="knob-indicator"></div></div>
+            <span class="knob-label">2: End</span>
+            <span class="knob-val">127</span>
+          </div>
+          <div class="macro-knob" data-knob="2" data-apc-ctrl="knob-2" title="APC: Knob 3 (CC 50) -> Pitch (Track) / Tune (Master) / 128th Nudge or Fine (Shift)" data-apc-hint="APC: Knob 3 (CC 50) -> Pitch | Shift+Hold Step: 128th Nudge | Shift: Fine">
+            <div class="knob-cap"><div class="knob-indicator"></div></div>
+            <span class="knob-label">3: Pitch</span>
+            <span class="knob-val">64</span>
+          </div>
+          <div class="macro-knob" data-knob="3" data-apc-ctrl="knob-3" title="APC: Knob 4 (CC 51) -> Dual PO Filter LPF < 64 > HPF" data-apc-hint="APC: Knob 4 (CC 51) -> Dual PO Filter (LPF < 64 > HPF)">
+            <div class="knob-cap"><div class="knob-indicator"></div></div>
+            <span class="knob-label">4: Filter</span>
+            <span class="knob-val">64</span>
+          </div>
+          <div class="macro-knob" data-knob="4" data-apc-ctrl="knob-4" title="APC: Knob 5 (CC 52) -> Filter Resonance Q | Shift: Swing" data-apc-hint="APC: Knob 5 (CC 52) -> Resonance Q | Shift: Swing">
+            <div class="knob-cap"><div class="knob-indicator"></div></div>
+            <span class="knob-label">5: Res Q</span>
+            <span class="knob-val">20</span>
+          </div>
+          <div class="macro-knob" data-knob="5" data-apc-ctrl="knob-5" title="APC: Knob 6 (CC 53) -> Decay (Track) / Delay Time (Master) / Stretch Mode (Shift)" data-apc-hint="APC: Knob 6 (CC 53) -> Decay | Master: Delay Time | Shift: Stretch Mode">
+            <div class="knob-cap"><div class="knob-indicator"></div></div>
+            <span class="knob-label">6: Decay</span>
+            <span class="knob-val">48</span>
+          </div>
+          <div class="macro-knob" data-knob="6" data-apc-ctrl="knob-6" title="APC: Knob 7 (CC 54) -> Delay Send (Track) / Sidechain Release (Master) / Delay Fdbk (Shift)" data-apc-hint="APC: Knob 7 (CC 54) -> Delay Send | Master: SC Release | Shift: Feedback">
+            <div class="knob-cap"><div class="knob-indicator"></div></div>
+            <span class="knob-label">7: FX Send</span>
+            <span class="knob-val">0</span>
+          </div>
+          <div class="macro-knob" data-knob="7" data-apc-ctrl="knob-7" title="APC: Knob 8 (CC 55) -> Track Volume (Track) / Sidechain Depth &amp; Vol (Master) / BPM (Shift)" data-apc-hint="APC: Knob 8 (CC 55) -> Track Vol | Master: SC Depth & Vol | Shift: BPM">
+            <div class="knob-cap"><div class="knob-indicator"></div></div>
+            <span class="knob-label">8: Level</span>
+            <span class="knob-val">108</span>
+          </div>
         </div>
       </section>
 
-      <!-- 8x5 Pad Matrix & Scene Buttons -->
-      <section id="apc-grid-container" title="APC: 40 RGB Matrix Pads &amp; 5 Scene Launch Buttons" data-apc-hint="APC: 40 RGB Matrix Pads (Notes 0-39) &amp; 5 Scene Buttons (Notes 82-86)"></section>
+      <!-- 8x5 Hardware Pad Matrix & 5 Scene Buttons -->
+      <section class="fl-window" id="tour-matrix">
+        <div class="fl-window-titlebar">
+          <div class="fl-title-left">
+            <span class="fl-title-dot dot-green"></span>
+            <span>APC KEY 25 — 8×5 PAD MATRIX (NOTES 0–39) &amp; SCENE LAUNCH (82–86)</span>
+          </div>
+          <span class="fl-mini-tag">SYNCED WITH HARDWARE MODE (SAMPLE / PATTERN / PERFORMANCE)</span>
+        </div>
+        <div id="apc-grid-container" data-apc-ctrl="matrix"></div>
+      </section>
 
-      <!-- 25-Key Piano Keyboard -->
-      <section id="apc-keyboard-container" class="keyboard-section" title="APC: 25-Key Piano Keybed (MIDI Channel 2)" data-apc-hint="APC: 25-Key Piano Keybed (Ch 2) -> Chromatic Notes / Drum Slices"></section>
+      <!-- 25-Key Velocity Piano Keybed -->
+      <section class="fl-window" id="tour-keyboard">
+        <div class="fl-window-titlebar">
+          <div class="fl-title-left">
+            <span class="fl-title-dot dot-teal"></span>
+            <span>25-KEY KEYBED (MIDI CHANNEL 2 — ISOLATED) &amp; QWERTY PLAYBACK</span>
+          </div>
+          <span class="fl-mini-tag">KEYS A–P ON COMPUTER KEYBOARD OR APC KEY 25 CH 2 KEYBED</span>
+        </div>
+        <div id="apc-keyboard-container" class="keyboard-section" data-apc-ctrl="keys"></div>
+      </section>
 
       <!-- Real-Time MIDI Activity Monitor -->
-      <section class="midi-monitor-section" title="APC: Real-Time Hardware USB MIDI Activity Monitor" data-apc-hint="APC: Real-Time Hardware USB MIDI Activity Monitor">
-        <div class="monitor-header">
-          <span>REAL-TIME MIDI ACTIVITY MONITOR</span>
-          <span id="midi-status-text" style="font-size: 9px; color: #828997;">WAITING FOR MIDI...</span>
+      <section class="fl-window midi-monitor-section">
+        <div class="fl-window-titlebar monitor-header">
+          <div class="fl-title-left">
+            <span class="fl-title-dot dot-grey"></span>
+            <span>MIDI ACTIVITY MONITOR</span>
+          </div>
+          <span id="midi-status-text" class="fl-mini-tag">WAITING FOR MIDI...</span>
         </div>
         <div id="midi-log-table" class="monitor-log-table"></div>
       </section>
@@ -389,82 +432,63 @@
       </div>
 
       <div class="modal-footer">
-        <button id="btn-close-modal" class="btn-tactile">CLOSE &amp; SAVE</button>
+        <button id="btn-close-modal" class="fl-btn btn-accent-orange">CLOSE &amp; SAVE</button>
       </div>
     </div>
   </div>
 
-  <!-- User Guide & Muscle Memory Onboarding Modal -->
+  <!-- User Guide & Hardware Manual Modal -->
   <div id="guide-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 780px;">
-      <div class="modal-title">OPEN-KO // 100% STANDALONE APC KEY 25 HARDWARE MANUAL</div>
+      <div class="modal-title">OPEN-KO // AKAI APC KEY 25 HARDWARE &amp; BEATMAKING MANUAL</div>
       
-      <div style="font-size: 12px; line-height: 1.6; color: #abb2bf;">
-        <div style="background: #14171a; border-left: 3px solid #ff5722; padding: 8px 12px; margin-bottom: 12px;">
-          <strong style="color: #ffffff;">100% HARDWARE-FIRST WORKFLOW:</strong> Every single menu, mode switch, pattern tool, sample chop, and audio routing setup is accessible and controllable directly from the Akai APC Key 25 Mk1 surface alone! Computer mouse &amp; keyboard are purely optional.
+      <div style="font-size: 12px; line-height: 1.55; color: #c4cdd5;">
+        <div style="background: #232a30; border-left: 3px solid #e88c38; padding: 8px 12px; margin-bottom: 12px;">
+          <strong style="color: #ffffff;">100% HARDWARE-FIRST WORKFLOW:</strong> Hover over any UI button to see an interactive Akai APC Key 25 Mk1 hardware diagram highlighting the exact physical button, knob, or pad that controls it.
         </div>
 
-        <h3 style="color: #ff5722; margin-top: 10px;">1. Standalone Hardware Navigation Matrix</h3>
+        <h3 style="color: #e88c38; margin-top: 10px; font-size: 12px;">1. Standalone Hardware Navigation Matrix</h3>
         <table style="width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 6px;">
-          <tr style="border-bottom: 1px solid #3e4451; color: #e67e22; text-align: left;">
+          <tr style="border-bottom: 1px solid #434f59; color: #e88c38; text-align: left;">
             <th style="padding: 4px;">Hardware Control</th>
-            <th style="padding: 4px;">Normal Press (Consistent Across All Modes)</th>
-            <th style="padding: 4px;">While Holding SHIFT (Note 98 or Scene 5)</th>
+            <th style="padding: 4px;">Normal Press</th>
+            <th style="padding: 4px;">While Holding SHIFT (Note 98)</th>
           </tr>
-          <tr><td style="padding: 4px;"><strong>Scene 1 (82)</strong></td><td style="padding: 4px;">Play / Pause (Preserves step cursor)</td><td style="padding: 4px;">Switch to <strong>Mode 1: Sample Mode</strong></td></tr>
-          <tr><td style="padding: 4px;"><strong>Scene 2 (83)</strong></td><td style="padding: 4px;">Toggle Live Loop Overdub (or Hold Sample)</td><td style="padding: 4px;">Switch to <strong>Mode 2: Pattern Mode</strong></td></tr>
-          <tr><td style="padding: 4px;"><strong>Scene 3 (84)</strong></td><td style="padding: 4px;">Auto-Slice Drum Kit (16 Slices)</td><td style="padding: 4px;">Switch to <strong>Mode 3: Performance Mode</strong></td></tr>
-          <tr><td style="padding: 4px;"><strong>Scene 4 (85)</strong></td><td style="padding: 4px;">Metronome On/Off</td><td style="padding: 4px;"><strong>Hardware Tap Tempo</strong> (Tap 2-4x)</td></tr>
-          <tr><td style="padding: 4px;"><strong>Scene 5 (86)</strong></td><td style="padding: 4px;">Cycle Next Pattern</td><td style="padding: 4px;">Secondary Shift button</td></tr>
-          <tr><td style="padding: 4px;"><strong>PLAY/PAUSE (91)</strong></td><td style="padding: 4px;">Play / Pause (Preserves cursor timestamp)</td><td style="padding: 4px;">Play / Pause</td></tr>
-          <tr><td style="padding: 4px;"><strong>REC (93)</strong></td><td style="padding: 4px;">Live Loop / Overdub Record into Sequencer</td><td style="padding: 4px;">Live Sample from Mic / AudioBox 96</td></tr>
-          <tr><td style="padding: 4px;"><strong>Stop All (81)</strong></td><td style="padding: 4px;">Stop &amp; Reset to Step 0, Pattern 1</td><td style="padding: 4px;"><strong>Toggle Guided Tester &amp; Layout Inspector</strong></td></tr>
-          <tr><td style="padding: 4px;"><strong>Track Buttons (64-71)</strong></td><td style="padding: 4px;">Toggle Track Mutes 1 to 8 (▲, ▼, ◄, ►, VOL, PAN, SEND, DEV)</td><td style="padding: 4px;">Toggle Track Mutes 9 to 16</td></tr>
-          <tr><td style="padding: 4px;"><strong>Sustain (CC 64)</strong></td><td style="padding: 4px;">Sustain Melodic Voices</td><td style="padding: 4px;"><strong>Toggle Minimal / Debug View</strong></td></tr>
-          <tr><td style="padding: 4px;"><strong>Octave Up / Down</strong></td><td style="padding: 4px;">Transpose Keybed Octave (Internal Hardware)</td><td style="padding: 4px;">Transpose Keybed Octave</td></tr>
-          <tr><td style="padding: 4px;"><strong>25 Piano Keys</strong></td><td style="padding: 4px;"><strong style="color: #00cec9;">Play Active Sample</strong> (Polyphonic / Drum Slices)</td><td style="padding: 4px;"><strong style="color: #00cec9;">Play Active Sample</strong> (NO hidden functions!)</td></tr>
+          <tr><td style="padding: 4px;"><strong>Scene 1 (82) / PLAY (91)</strong></td><td style="padding: 4px;">Play / Pause (preserves cursor)</td><td style="padding: 4px;">Scene 1 = Sample Mode | Play 91 = Toggle Freeform/Quant Rec</td></tr>
+          <tr><td style="padding: 4px;"><strong>Scene 2 (83) / REC (93)</strong></td><td style="padding: 4px;">Freeform 128th Auto-BPM / Overdub Rec</td><td style="padding: 4px;">Scene 2 = Pattern Mode | Rec 93 = Live Line/Mic Sample</td></tr>
+          <tr><td style="padding: 4px;"><strong>Scene 3 (84)</strong></td><td style="padding: 4px;">Auto-Slice Drum Kit (16 Slices)</td><td style="padding: 4px;">Switch to Performance Mode</td></tr>
+          <tr><td style="padding: 4px;"><strong>Scene 4 (85)</strong></td><td style="padding: 4px;">Metronome On/Off</td><td style="padding: 4px;">Hardware Tap Tempo (Tap 2–4x)</td></tr>
+          <tr><td style="padding: 4px;"><strong>Scene 5 (86)</strong></td><td style="padding: 4px;">Append Pattern to Song Chain</td><td style="padding: 4px;">Reset Song Chain to Single Loop</td></tr>
+          <tr><td style="padding: 4px;"><strong>Stop All (81)</strong></td><td style="padding: 4px;">Stop &amp; Reset to Step 0, Pattern 1</td><td style="padding: 4px;">Open Guided APC Hardware Tester</td></tr>
+          <tr><td style="padding: 4px;"><strong>▲ / ▼ (64 / 65)</strong></td><td style="padding: 4px;">Prev / Next Track (or Page when Zoom &gt; 1X)</td><td style="padding: 4px;">Cycle All 60 Factory Samples (+1 / -1)</td></tr>
+          <tr><td style="padding: 4px;"><strong>◄ / ► (66 / 67)</strong></td><td style="padding: 4px;">Hold ◄ + Pad = PATTERN | Hold ► + Pad = SOUND</td><td style="padding: 4px;">◄ = Cycle Swing | ► = Toggle Track/Master Knobs</td></tr>
+          <tr><td style="padding: 4px;"><strong>DEVICE (71)</strong></td><td style="padding: 4px;">Toggle Knob Bank (Track / Master)</td><td style="padding: 4px;">Toggle Knob Bank (Track / Master)</td></tr>
+          <tr><td style="padding: 4px;"><strong>Sustain (CC 64)</strong></td><td style="padding: 4px;">Sustain Melodic Notes</td><td style="padding: 4px;">Toggle Minimal PO-33 View</td></tr>
+          <tr><td style="padding: 4px;"><strong>25 Piano Keys (Ch 2)</strong></td><td style="padding: 4px;">Chromatic Melodic / 16 Drum Slices</td><td style="padding: 4px;">Always Plays Sound (Zero hidden shortcuts)</td></tr>
         </table>
 
-        <h3 style="color: #ff7822; margin-top: 14px;">2. Hardware Pattern, 128th-Note &amp; Sidechain Tools (Hold SHIFT + Step Pads 1–16)</h3>
-        <p>In Pattern Mode, hold <strong>SHIFT</strong> and press step pads in Rows 1 &amp; 2:</p>
-        <ul style="margin-left: 20px; margin-top: 4px;">
-          <li><strong>Row 1 (Pads 1–8 / Notes 32–39):</strong> <strong>1:</strong> Clear Track | <strong>2:</strong> Duplicate Pattern | <strong>3/4:</strong> Shift Steps L/R | <strong>5:</strong> Humanize | <strong>6:</strong> Cycle Swing | <strong>7/8:</strong> 2x / 0.5x BPM</li>
-          <li><strong>Row 2 (Pads 9–16 / Notes 24–31):</strong> <strong>9:</strong> Toggle Freeform (128th Auto-BPM) vs Quantized Rec | <strong>10:</strong> Cycle Zoom (1X/2X/4X/8X) | <strong>11/12:</strong> Nudge Step -1/+1 128th | <strong>13:</strong> Sidechain ON/OFF | <strong>14:</strong> Toggle Track Duck (D) | <strong>15:</strong> Set Track as Sidechain Source (SC) | <strong>16:</strong> Toggle Follow Playhead</li>
-          <li><strong>Hold Any Step Pad + Turn Knobs:</strong> Knobs 1–6 write Parameter Locks; <strong>Hold Step + SHIFT + Knob 3</strong> slides the note freely across the <strong>128th-note grid</strong>!</li>
+        <h3 style="color: #e88c38; margin-top: 14px; font-size: 12px;">2. Hardware Pattern, 128th-Note &amp; Sidechain Tools (Hold SHIFT + Step Pads 1–16)</h3>
+        <ul style="margin-left: 18px; margin-top: 4px;">
+          <li><strong>Row 1 (Pads 1–8 / Notes 32–39):</strong> <strong>1:</strong> Clear Track | <strong>2:</strong> Duplicate Pattern | <strong>3/4:</strong> Shift Steps L/R | <strong>5:</strong> Humanize | <strong>6:</strong> Swing | <strong>7/8:</strong> 2x / 0.5x BPM</li>
+          <li><strong>Row 2 (Pads 9–16 / Notes 24–31):</strong> <strong>9:</strong> Freeform vs Quantized Rec | <strong>10:</strong> Cycle Zoom 1X–8X | <strong>11/12:</strong> Nudge -1/+1 128th | <strong>13:</strong> Sidechain ON/OFF | <strong>14:</strong> Track Duck (D) | <strong>15:</strong> Set Sidechain Source (SC) | <strong>16:</strong> Page Follow</li>
+          <li><strong>Hold Any Active Step Pad:</strong> Inspect without deleting! Turn Knobs 1–6 to P-Lock, or turn <strong>SHIFT + Knob 3</strong> to slide across the <strong>128th-note pocket</strong>.</li>
         </ul>
 
-        <h3 style="color: #26de81; margin-top: 14px;">3. Freeform First-Loop Auto-BPM &amp; Sidechain Ducking</h3>
-        <ul style="margin-left: 20px; margin-top: 4px;">
-          <li><strong>Freeform 128th Recording (Default):</strong> Press <strong>REC (Scene 2 / Note 83)</strong> to arm. Strike your first chop/drum key to begin timing freely—play your dirty hip-hop loop with natural swing, then tap <strong>REC</strong> on the downbeat to seal! Open-KO automatically calculates the exact BPM from your loop length and lays every hit onto the <strong>128th-note micro-timing grid</strong>.</li>
-          <li><strong>Sidechain Ducking Compressor:</strong> Melodic tracks (1–8, marked <code>D</code>) automatically duck when the Sidechain Source (Track 9 Kick, marked <code>SC</code>) hits. Switch to Master Knobs (<code>DEVICE</code> Note 71) and use <strong>Knob 7 (Release 40–500ms)</strong> &amp; <strong>Knob 8 (Duck Depth 0–100%)</strong> to dial in heavy lo-fi / French house pump!</li>
-          <li><strong>8 Overhauled Punch-In FX (Row 5 Pads 0–7):</strong> 1/8 Stutter, 1/16 Beat Roll, 12-Bit SP-1200 Crush, Vinyl Brake, Resonant HPF Sweep, Resonant LPF Sub-Drop, French House SC Pump, Dub Space Echo.</li>
+        <h3 style="color: #73bf57; margin-top: 14px; font-size: 12px;">3. Freeform First-Loop Auto-BPM &amp; Sidechain Ducking</h3>
+        <ul style="margin-left: 18px; margin-top: 4px;">
+          <li><strong>Freeform 128th Recording (Default):</strong> Press <strong>REC</strong> to arm, strike your first chop to start timing, jam your groove freely, and tap <strong>REC</strong> on the downbeat to auto-lock BPM and place every hit on the 128th grid.</li>
+          <li><strong>Sidechain Ducking Compressor:</strong> Melodic tracks (<code>D</code>) duck whenever the trigger source (default Track 9 <code>SC</code>) hits. Switch to Master Knobs (<code>DEVICE</code>) and dial <strong>Knob 7 (Release)</strong> and <strong>Knob 8 (Depth &amp; Comp Vol)</strong>.</li>
         </ul>
 
-        <h3 style="color: #0984e3; margin-top: 14px;">4. How to Sample: Straight from Computer (YouTube/Spotify) or Line-In</h3>
-        <div style="background: #1a1e24; border-radius: 4px; padding: 10px; margin-top: 6px;">
-          <p><strong style="color: #61afef;">A. Sample Directly from Computer Sound (YouTube, Spotify Web, SoundCloud):</strong></p>
-          <ol style="margin-left: 20px; margin-top: 4px; font-size: 11px;">
-            <li>Select your destination slot (Tracks 1–8 for Melodic instruments, Tracks 9–16 for Drum Kits).</li>
-            <li>Click <strong>[🖥️ TAB AUDIO]</strong> in the top bar.</li>
-            <li>When the browser popup appears, select the <strong>"Chrome Tab"</strong> (e.g. YouTube or Spotify) and make sure <strong>"Also share tab audio"</strong> is <strong>CHECKED</strong>! Click Share.</li>
-            <li>Hit Play on the YouTube/Spotify song. Open-KO records the pristine digital audio stream in real-time.</li>
-            <li>Click <strong>[⏹ STOP TAB]</strong> when finished. Audio is peak-normalized to -0.5 dB and loaded into your slot! (Drum slots auto-slice into 16 slices!).</li>
-          </ol>
-
-          <p style="margin-top: 8px;"><strong style="color: #e17055;">B. Sample from Line-In / AudioBox USB 96 / Synth / Phone:</strong></p>
-          <ol style="margin-left: 20px; margin-top: 4px; font-size: 11px;">
-            <li>Connect your synth or phone to Input 1/2 of your USB Audio Interface (e.g. PreSonus AudioBox USB 96).</li>
-            <li>In Open-KO, click <strong>[⚙ SETUP]</strong> and ensure your interface is chosen under Audio Input.</li>
-            <li>Select the target track slot.</li>
-            <li>Click <strong>[🎙 LINE/MIC]</strong> (or press <strong>Shift + REC</strong> on the APC Key 25 Mk1).</li>
-            <li>Play your instrument or audio source.</li>
-            <li>Click <strong>[⏹ STOP REC]</strong> (or press <strong>Shift + REC</strong> again). The sample is normalized and ready to play!</li>
-          </ol>
+        <h3 style="color: #5ca8d6; margin-top: 14px; font-size: 12px;">4. Sampling from YouTube / Spotify Tab or Line-In</h3>
+        <div style="background: #22292f; border: 1px solid #38434d; border-radius: 3px; padding: 8px 10px; margin-top: 6px; font-size: 11px;">
+          <p><strong>Tab Audio (YouTube / Spotify Web):</strong> Select destination track &rarr; click <strong>TAB AUDIO</strong> &rarr; choose Chrome Tab &rarr; check <em>"Also share tab audio"</em> &rarr; play audio &rarr; click <strong>STOP TAB</strong>.</p>
+          <p style="margin-top: 6px;"><strong>Line-In / AudioBox USB 96:</strong> Pick your interface in <strong>SETUP</strong> &rarr; select track &rarr; press <strong>Shift + REC</strong> (or click <strong>LINE / MIC</strong>) &rarr; play &rarr; press again to normalize &amp; auto-slice.</p>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button id="btn-close-guide" class="btn-tactile">GOT IT</button>
+        <button id="btn-close-guide" class="fl-btn btn-accent-orange">CLOSE</button>
       </div>
     </div>
   </div>
@@ -472,28 +496,25 @@
   <!-- Session Master & Historical Logs Modal -->
   <div id="logs-modal" class="modal-overlay">
     <div class="modal-content" style="max-width: 820px; max-height: 92vh; display: flex; flex-direction: column;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3e4451; padding-bottom: 8px; margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #434f59; padding-bottom: 8px; margin-bottom: 12px;">
         <div>
-          <div style="font-size: 15px; font-weight: 900; color: #00cec9; letter-spacing: 1px;">SESSION ARCHITECTURE &amp; CONSOLE LOGS</div>
-          <div style="font-size: 10px; color: #828997;">Auto-Rotating Master Log with Datetime-Tagged Historical Archive</div>
+          <div class="modal-title" style="margin-bottom: 2px;">SESSION DIAGNOSTICS &amp; CONSOLE LOGS</div>
+          <div style="font-size: 10px; color: #8c9aa6;">Auto-Rotating Master Log with Datetime-Tagged Historical Archive</div>
         </div>
-        <button id="btn-close-logs" class="btn-tactile">CLOSE [ESC]</button>
+        <button id="btn-close-logs" class="fl-btn">CLOSE [ESC]</button>
       </div>
 
-      <!-- Action bar -->
-      <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
-        <button id="btn-download-master-log" class="btn-tactile btn-play">📥 DOWNLOAD CURRENT MASTER LOG</button>
-        <button id="btn-copy-master-log" class="btn-tactile">📋 COPY LOG TO CLIPBOARD</button>
-        <button id="btn-clear-log-history" class="btn-tactile" style="background: #3a1f1f; border-color: #e74c3c; margin-left: auto;">🗑 CLEAR HISTORY</button>
+      <div style="display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;">
+        <button id="btn-download-master-log" class="fl-btn btn-accent-green">DOWNLOAD LOG</button>
+        <button id="btn-copy-master-log" class="fl-btn">COPY TO CLIPBOARD</button>
+        <button id="btn-clear-log-history" class="fl-btn" style="margin-left: auto;">CLEAR HISTORY</button>
       </div>
 
-      <!-- Live Master Log Preview -->
-      <div style="font-size: 11px; font-weight: bold; color: #ff9f43; margin-bottom: 4px;">CURRENT SESSION MASTER LOG:</div>
-      <div id="master-log-preview" style="flex: 1; min-height: 220px; max-height: 320px; background: #080a0c; border: 1px solid #282c34; border-radius: 4px; padding: 10px; font-family: 'Courier New', monospace; font-size: 10px; color: #abb2bf; overflow-y: auto; white-space: pre-wrap; line-height: 1.4;"></div>
+      <div style="font-size: 10px; font-weight: 700; color: #e88c38; margin-bottom: 4px;">CURRENT SESSION MASTER LOG:</div>
+      <div id="master-log-preview" style="flex: 1; min-height: 200px; max-height: 300px; background: #191f24; border: 1px solid #38434d; border-radius: 2px; padding: 8px; font-family: monospace; font-size: 10px; color: #c4cdd5; overflow-y: auto; white-space: pre-wrap; line-height: 1.4;"></div>
 
-      <!-- Historical Sessions List -->
-      <div style="font-size: 11px; font-weight: bold; color: #61afef; margin-top: 14px; margin-bottom: 6px;">HISTORICAL SESSIONS (AUTO-ARCHIVED ON NEW SESSIONS):</div>
-      <div id="historical-sessions-list" style="max-height: 160px; overflow-y: auto; background: #14171a; border: 1px solid #282c34; border-radius: 4px; padding: 6px;"></div>
+      <div style="font-size: 10px; font-weight: 700; color: #5ca8d6; margin-top: 12px; margin-bottom: 4px;">HISTORICAL SESSIONS:</div>
+      <div id="historical-sessions-list" style="max-height: 150px; overflow-y: auto; background: #1c2228; border: 1px solid #38434d; border-radius: 2px; padding: 6px;"></div>
     </div>
   </div>
 

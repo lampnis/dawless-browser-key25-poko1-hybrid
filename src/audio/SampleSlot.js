@@ -228,46 +228,60 @@ export class SampleSlot {
       return this.buffer;
     }
 
-    // Granular overlap-add pitch shifter:
-    // Window size ~35ms with Hann window
+    // Granular overlap-add pitch shifter (constant duration: hopIn === hopOut!):
+    // Window size ~35ms with 50% Hann overlap and linear interpolation inside each grain
     const grainSize = Math.max(64, Math.floor(sampleRate * 0.035));
-    const hopOut = Math.max(16, Math.floor(grainSize * 0.45));
-    const hopIn = Math.max(16, Math.floor(hopOut * R));
+    const hop = Math.max(16, Math.floor(grainSize * 0.5));
 
     const win = new Float32Array(grainSize);
     for (let i = 0; i < grainSize; i++) {
       win[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (grainSize - 1)));
     }
 
+    const grainSpanIn = grainSize * R;
+    const maxStartIn = Math.max(0, origLen - Math.ceil(grainSpanIn) - 2);
+
     for (let c = 0; c < numChannels; c++) {
       const inData = origBuffer.getChannelData(c);
       const outData = shiftedBuffer.getChannelData(c);
 
-      let inPos = 0;
-      let outPos = 0;
-      while (inPos + grainSize < origLen && outPos + grainSize < origLen) {
+      for (let outPos = 0; outPos + grainSize <= origLen; outPos += hop) {
+        // Keep read cursor synced 1:1 with output timeline so duration never squeezes!
+        const inPos = Math.min(outPos, maxStartIn);
         for (let i = 0; i < grainSize; i++) {
-          const resampIdx = inPos + Math.floor(i * R);
-          if (resampIdx < origLen) {
-            outData[outPos + i] += inData[resampIdx] * win[i];
+          const readF = inPos + (i * R);
+          const idx0 = Math.floor(readF);
+          if (idx0 + 1 < origLen) {
+            const frac = readF - idx0;
+            const sample = inData[idx0] + (inData[idx0 + 1] - inData[idx0]) * frac;
+            outData[outPos + i] += sample * win[i];
+          } else if (idx0 < origLen) {
+            outData[outPos + i] += inData[idx0] * win[i];
           }
         }
-        inPos += hopIn;
-        outPos += hopOut;
       }
 
-      // Peak normalize channel
+      // Preserve original loudness level without distorting quiet tails
+      let origPeak = 0;
       let peak = 0;
       for (let i = 0; i < origLen; i++) {
+        const aOrig = Math.abs(inData[i]);
+        if (aOrig > origPeak) origPeak = aOrig;
         const abs = Math.abs(outData[i]);
         if (abs > peak) peak = abs;
       }
       if (peak > 0.001) {
-        const gain = 0.92 / peak;
+        const targetPeak = Math.min(0.95, origPeak > 0.05 ? origPeak : 0.9);
+        const gain = targetPeak / peak;
         for (let i = 0; i < origLen; i++) outData[i] *= gain;
       }
     }
 
+    // Cap cache to 24 semitone entries (simple FIFO/LRU eviction)
+    if (this._pitchShiftCache.size >= 24) {
+      const oldestKey = this._pitchShiftCache.keys().next().value;
+      this._pitchShiftCache.delete(oldestKey);
+    }
     this._pitchShiftCache.set(roundedSemi, shiftedBuffer);
     return shiftedBuffer;
   }

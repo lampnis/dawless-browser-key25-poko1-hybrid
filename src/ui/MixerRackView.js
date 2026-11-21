@@ -80,7 +80,7 @@ export class MixerRackView {
         <div class="strip-steps-badge" id="strip-steps-${i}">0 STEPS</div>
 
         <div class="strip-fader-box">
-          <input type="range" class="strip-fader" id="strip-vol-${i}" min="0" max="127" value="${Math.round((slot.volume || 0.85) * 127)}" title="${faderHint}" data-apc-hint="${faderHint}">
+          <input type="range" class="strip-fader" id="strip-vol-${i}" min="0" max="127" value="${Math.round((slot.volume || 0.85) * 127)}" orient="vertical" title="${faderHint}" data-apc-hint="${faderHint}">
         </div>
 
         <div class="strip-btn-row">
@@ -89,8 +89,16 @@ export class MixerRackView {
           <button class="strip-btn strip-duck-btn ${slot.sidechainDucked !== false ? 'active' : ''}" id="strip-duck-${i}" title="APC: Select Track ${trackNum} then press Shift + Pad 14 (Note 29) -> Toggle Sidechain Ducking (Shift + Pad 15 sets Trigger Source)" data-apc-hint="APC: Shift + Pad 14 (Note 29) -> Toggle Track Sidechain Duck | Shift + Pad 15 -> Set SC Trigger">D</button>
         </div>
 
-        <button class="strip-jam-btn" id="strip-jam-${i}" title="${jamHint}" data-apc-hint="${jamHint}">JAM</button>
+        <button class="strip-jam-btn" id="strip-jam-${i}" title="${jamHint}" data-apc-hint="${jamHint}">SEL</button>
       `;
+
+      // Clicking anywhere on the strip body (header/name/steps) selects the track cleanly
+      strip.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.closest('input')) return;
+        if (this.callbacks.onSlotSelect) {
+          this.callbacks.onSlotSelect(i);
+        }
+      });
 
       // Bind events
       const fader = strip.querySelector(`#strip-vol-${i}`);
@@ -190,9 +198,26 @@ export class MixerRackView {
       const jamBtn = strip.querySelector(`#strip-jam-${i}`);
       if (jamBtn) {
         jamBtn.classList.toggle('active', isSelected);
-        jamBtn.textContent = isSelected ? 'ACTIVE' : 'JAM';
+        jamBtn.textContent = isSelected ? 'ACTIVE' : 'SEL';
       }
     });
+  }
+
+  updateSlotName(slotIdx, name) {
+    const strip = this.trackStrips[slotIdx];
+    if (!strip) return;
+    const nameEl = strip.querySelector('.strip-name');
+    if (nameEl) {
+      nameEl.textContent = name || `Track ${slotIdx + 1}`;
+      nameEl.title = name || `Track ${slotIdx + 1}`;
+    }
+  }
+
+  updateSlotVolume(slotIdx, vol) {
+    const fader = document.getElementById(`strip-vol-${slotIdx}`);
+    if (fader) {
+      fader.value = Math.round(Math.max(0, Math.min(1, vol)) * 127);
+    }
   }
 
   updateMuteAndSoloStates() {
@@ -279,6 +304,13 @@ export class MixerRackView {
   }
 
   updateAll() {
+    for (let i = 0; i < 16; i++) {
+      const slot = this.audioEngine.slots[i];
+      if (slot) {
+        this.updateSlotName(i, slot.name);
+        this.updateSlotVolume(i, slot.volume !== undefined ? slot.volume : 0.85);
+      }
+    }
     this.updateActiveSlot(this.audioEngine.activeSlotIndex);
     this.updateMuteAndSoloStates();
     this.updateStepCounts();

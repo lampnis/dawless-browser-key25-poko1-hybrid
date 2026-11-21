@@ -1,40 +1,48 @@
 @import "./open-ko-po.css";
 
 /* ==========================================================================
-   Open-KO: FL Studio 21 Dark Slate / Channel Rack / Hardware Workstation UI
-   100% Hardware-First for Akai APC Key 25 Mk1 + Dual Minimal PO-33 / Studio View
+   Open-KO: Authentic Image-Line FL Studio 21 / 2024 Matte Slate DAW Theme
+   Zero neon AI-slop — crisp steel-slate windows, flat tactile buttons,
+   iconic Channel Rack 4-step grey/plum chicklets, and APC Key 25 LED focus.
    ========================================================================== */
 
 :root {
-  --bg-chassis: #181c22;
-  --bg-panel: #212730;
-  --bg-panel-dark: #13171c;
-  --bg-lcd: #0b0e12;
-  --text-lcd-primary: #ff8c38;
-  --text-lcd-secondary: #18dcff;
-  --text-lcd-dim: #5c6778;
-  --knob-cap: #2d3440;
-  --knob-indicator: #26de81;
-  --pad-off: #222730;
-  --pad-border: #12151a;
+  /* Core FL Studio 21 Cool Steel-Slate Surfaces */
+  --fl-desktop: #21272c;
+  --fl-window-bg: #313940;
+  --fl-titlebar: #283036;
+  --fl-panel-well: #232a30;
+  --fl-recessed: #1a2025;
+  --fl-border-dark: #171c20;
+  --fl-border-mid: #404b54;
+  --fl-highlight-top: rgba(255, 255, 255, 0.07);
 
-  /* FL Studio Accent & Channel Rack Palette */
-  --fl-orange: #ff7828;
-  --fl-lime: #26de81;
-  --fl-cyan: #18dcff;
-  --fl-step-grey: #363e4a;
-  --fl-step-plum: #463843;
+  /* FL Button Chrome */
+  --fl-btn-top: #3e4850;
+  --fl-btn-bot: #343d44;
+  --fl-btn-hover: #47525b;
+  --fl-btn-text: #d1d8df;
+  --fl-text-muted: #8b98a4;
 
-  /* LED Glow Colors */
-  --led-green: #26de81;
-  --led-green-glow: rgba(38, 222, 129, 0.65);
-  --led-amber: #ff9f43;
-  --led-amber-glow: rgba(255, 159, 67, 0.75);
-  --led-red: #ff4757;
-  --led-red-glow: rgba(255, 71, 87, 0.85);
+  /* Authentic FL Studio Functional Accents (Restrained, Non-Neon) */
+  --fl-orange: #e88c38;
+  --fl-green: #73bf57;
+  --fl-red: #d64f4f;
+  --fl-teal: #5ca8d6;
+  --fl-amber: #e6a947;
 
-  --accent-orange: #ff7828;
-  --accent-cyan: #18dcff;
+  /* FL Channel Rack Iconic Alternating Step Chicklets */
+  --fl-step-grey-top: #626c74;
+  --fl-step-grey-bot: #505960;
+  --fl-step-plum-top: #76575d;
+  --fl-step-plum-bot: #61474c;
+  --fl-step-lit-top: #f2ede4;
+  --fl-step-lit-bot: #dcd5c9;
+
+  /* Hardware APC Key 25 Physical LED Colors */
+  --led-green: #4cd16d;
+  --led-amber: #f2a23a;
+  --led-red: #e84c4c;
 }
 
 * {
@@ -47,418 +55,710 @@
 }
 
 body {
-  background-color: #0e1115;
-  background-image: radial-gradient(circle at 50% 0%, #1a2029 0%, #0d1014 75%);
-  color: #c0c8d6;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--fl-desktop);
+  color: var(--fl-btn-text);
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Inter", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 11px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
-  padding: 12px;
+  padding: 8px;
   overflow-x: hidden;
 }
 
-/* Main Chassis (FL Studio Main Workstation Window) */
+/* Main Docked FL Studio Workspace Container */
 .chassis {
-  background: linear-gradient(180deg, #1f242d 0%, #161a20 100%);
-  border-radius: 10px;
-  border: 1px solid #363f4d;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   width: 100%;
-  max-width: 1140px;
-  padding: 14px 16px;
+  max-width: 1200px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
-/* Header & FL-Style Top Transport Toolbar */
+/* ==========================================================================
+   FL STUDIO MAIN TOP TOOLBAR
+   ========================================================================== */
 .header-bar {
+  background: var(--fl-window-bg);
+  border: 1px solid var(--fl-border-dark);
+  border-radius: 3px;
+  box-shadow: inset 0 1px 0 var(--fl-highlight-top), 0 1px 3px rgba(0, 0, 0, 0.35);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(180deg, #282f3a 0%, #1c2129 100%);
-  border: 1px solid #353e4c;
-  border-radius: 6px;
-  padding: 8px 12px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 6px rgba(0, 0, 0, 0.35);
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-direction: column;
 }
 
-.brand-section {
+.toolbar-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  padding: 5px 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-row-top {
+  border-bottom: 1px solid #22282d;
+  justify-content: space-between;
+}
+
+.toolbar-row-bottom {
+  background: #2b3339;
+  justify-content: space-between;
+  padding: 4px 8px;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.toolbar-sep {
+  width: 1px;
+  height: 24px;
+  background: #20262b;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  margin: 0 2px;
+}
+
+.toolbar-sep-sm {
+  display: inline-block;
+  width: 1px;
+  height: 16px;
+  background: #20262b;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  margin: 0 2px;
 }
 
 .brand-logo {
-  font-family: "Courier New", monospace;
-  font-size: 20px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  color: #111418;
-  background: linear-gradient(135deg, #ff9f43 0%, #ff6b1a 100%);
-  padding: 4px 10px;
-  border-radius: 4px;
-  box-shadow: 0 0 12px rgba(255, 120, 40, 0.45);
-  display: inline-block;
-}
-
-.brand-sub {
-  font-size: 10px;
-  letter-spacing: 1.4px;
-  color: #939eae;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-/* Mode Switcher Bar (Sample / Channel Rack Pattern / Playlist Performance) */
-.mode-switcher-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #14181e;
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #2b3340;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.mode-buttons {
-  display: flex;
-  gap: 6px;
-}
-
-.mode-btn {
-  background: #222832;
-  color: #8b96a8;
-  border: 1px solid #343d4b;
-  padding: 6px 14px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.8px;
-  cursor: pointer;
-  transition: all 0.12s ease;
-}
-
-.mode-btn:hover {
-  border-color: #4f5d73;
-  color: #dce3ee;
-}
-
-.mode-btn.active {
-  background: linear-gradient(180deg, #ff8533 0%, #e85d04 100%);
-  color: #ffffff;
-  border-color: #ff9f43;
-  box-shadow: 0 0 10px rgba(255, 120, 40, 0.5);
-}
-
-.view-toggle-btn {
-  background: #1d242e;
-  color: var(--fl-lime);
-  border: 1px solid var(--fl-lime);
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.12s ease;
-}
-
-.view-toggle-btn:hover {
-  background: rgba(38, 222, 129, 0.12);
-}
-
-/* Tactile FL Toolbar Buttons */
-.btn-tactile {
-  background: linear-gradient(180deg, #323946 0%, #262c36 100%);
-  color: #d8e0ec;
-  border: 1px solid #434d5e;
-  border-radius: 4px;
-  padding: 5px 10px;
-  font-size: 10.5px;
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.4px;
+  letter-spacing: 1.2px;
+  color: #1a2025;
+  background: var(--fl-orange);
+  padding: 3px 8px;
+  border-radius: 2px;
+  border: 1px solid #b5651d;
+  line-height: 1.2;
+}
+
+/* Flat Matte FL Studio Tactile Buttons */
+.fl-btn,
+.btn-tactile {
+  background: linear-gradient(180deg, var(--fl-btn-top) 0%, var(--fl-btn-bot) 100%);
+  color: var(--fl-btn-text);
+  border: 1px solid var(--fl-border-dark);
+  border-radius: 2px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 0 #13161b;
-  transition: all 0.08s ease;
+  box-shadow: inset 0 1px 0 var(--fl-highlight-top);
+  transition: background 0.06s ease, color 0.06s ease;
+  line-height: 1.25;
+  white-space: nowrap;
 }
 
+.fl-btn:hover,
 .btn-tactile:hover {
-  filter: brightness(1.1);
-}
-
-.btn-tactile:active {
-  transform: translateY(1px);
-  box-shadow: none;
-}
-
-.btn-play {
-  background: linear-gradient(180deg, #26de81 0%, #1db968 100%);
-  border-color: #4cd995;
-  color: #0b140f;
-}
-
-.btn-stop {
-  background: linear-gradient(180deg, #4b5563 0%, #374151 100%);
-  border-color: #6b7280;
-  color: #f3f4f6;
-}
-
-.btn-record {
-  background: linear-gradient(180deg, #ff4757 0%, #d63031 100%);
-  border-color: #ff6b81;
+  background: var(--fl-btn-hover);
   color: #ffffff;
 }
 
-/* Retro TE LCD Screen */
-.lcd-display {
-  background: var(--bg-lcd);
-  border: 2px solid #3e4451;
-  border-radius: 6px;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9);
-  padding: 10px 14px;
-  font-family: "Courier New", monospace;
+.fl-btn:active,
+.btn-tactile:active {
+  background: #283036;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.lcd-top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px dashed #282c34;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-  gap: 10px;
+.fl-btn-xs {
+  padding: 2px 6px;
+  font-size: 9.5px;
 }
 
-.lcd-cell {
+.fl-btn-xxs {
+  padding: 1px 5px;
+  font-size: 8.5px;
+}
+
+.fl-btn.is-active,
+.fl-btn.active {
+  background: #445343;
+  border-color: #1f2a1e;
+  color: #b5e6a1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.fl-btn.btn-accent-orange {
+  background: #5c432b;
+  border-color: #241b12;
+  color: #f3c18c;
+}
+
+.fl-btn.btn-accent-orange:hover {
+  background: #6f4f32;
+  color: #ffffff;
+}
+
+.fl-btn.btn-accent-green {
+  background: #364e38;
+  border-color: #1b271c;
+  color: #a9df9c;
+}
+
+.fl-btn.btn-accent-green:hover {
+  background: #405e42;
+  color: #ffffff;
+}
+
+/* Audio Context Unlock Status Pill */
+#btn-audio-unlock.audio-locked {
+  background: #7c3b20;
+  border-color: #36190d;
+  color: #ffd3a8;
+  animation: fl-pulse-subtle 1.4s infinite alternate;
+}
+
+#btn-audio-unlock.audio-ready {
+  background: #2c3a2d;
+  border-color: #1b241c;
+  color: #85c872;
+}
+
+@keyframes fl-pulse-subtle {
+  0% { filter: brightness(0.95); }
+  100% { filter: brightness(1.22); }
+}
+
+/* Transport Button States */
+.btn-play {
+  min-width: 68px;
+}
+
+.btn-play.is-playing {
+  background: var(--fl-green);
+  color: #12210d;
+  border-color: #274a1c;
+}
+
+.btn-play.is-paused {
+  background: #8a6427;
+  color: #fff3d6;
+  border-color: #3b2a0f;
+}
+
+.btn-record.active,
+.btn-record.is-armed,
+.fl-btn.recording {
+  background: var(--fl-red);
+  color: #ffffff;
+  border-color: #541d1d;
+}
+
+.btn-rec-mode.is-freeform {
+  background: #4f3e2d;
+  color: #f2be85;
+  border-color: #261d14;
+}
+
+#btn-knob-bank.is-master {
+  background: #54422a;
+  color: #f5c37f;
+  border-color: #291f13;
+}
+
+/* Recessed FL Studio Digital Readout Wells */
+.fl-lcd-cluster {
+  gap: 5px;
+}
+
+.fl-readout-well {
+  background: var(--fl-recessed);
+  border: 1px solid var(--fl-border-dark);
+  border-bottom-color: #3a444c;
+  border-radius: 2px;
+  padding: 2px 7px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  min-height: 30px;
 }
 
-.lcd-cell .label {
-  font-size: 9px;
-  color: var(--text-lcd-dim);
-  letter-spacing: 1px;
-  font-weight: bold;
+.fl-readout-well.well-wide {
+  min-width: 158px;
 }
 
-.lcd-cell .value {
-  font-size: 18px;
-  font-weight: 900;
-  color: var(--text-lcd-primary);
-  letter-spacing: 1px;
+.fl-readout-well.well-narrow {
+  min-width: 36px;
+  align-items: center;
 }
 
-.lcd-cell .value.secondary {
-  color: var(--text-lcd-secondary);
+.fl-readout-well.well-vu {
+  align-items: center;
+  padding: 2px 5px;
+}
+
+.well-label {
+  font-size: 8px;
+  font-weight: 700;
+  color: #6e7c88;
+  letter-spacing: 0.6px;
+  line-height: 1;
+  margin-bottom: 1px;
+}
+
+.well-digits {
+  font-family: "Consolas", "SF Mono", "Menlo", monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fl-orange);
+  line-height: 1.1;
+}
+
+.well-digits.well-cyan {
+  color: var(--fl-teal);
+}
+
+.well-digits-sm {
+  font-family: "Consolas", "SF Mono", "Menlo", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fl-orange);
+}
+
+.well-digits-xs {
+  font-family: "Consolas", "SF Mono", "Menlo", monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #b7c4cf;
+}
+
+.well-bpm-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.well-stepper {
+  background: #272f36;
+  border: 1px solid #161b1f;
+  color: #9ba8b4;
+  font-size: 10px;
+  font-weight: 700;
+  width: 15px;
+  height: 15px;
+  line-height: 1;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.well-stepper:hover {
+  background: #364049;
+  color: #ffffff;
+}
+
+.well-slot-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.well-name {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #dbe3ea;
+  max-width: 112px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .vu-meter-box {
   display: flex;
   align-items: flex-end;
-  gap: 3px;
-  height: 22px;
-  width: 24px;
-  background: #080a0c;
-  padding: 2px;
-  border-radius: 2px;
+  gap: 2px;
+  height: 16px;
+  width: 14px;
+  background: #101418;
+  padding: 1px;
 }
 
 .vu-bar {
   flex: 1;
   height: 0%;
-  background: #2ecc71;
+  background: linear-gradient(to top, #5eb846 0%, #c9b53e 72%, #d64f4f 100%);
   transition: height 0.05s ease;
 }
 
-.lcd-bottom-row {
+/* FL Studio Iconic Hint Panel */
+.fl-hint-panel {
+  flex: 1;
+  min-width: 240px;
+  background: var(--fl-recessed);
+  border: 1px solid var(--fl-border-dark);
+  border-bottom-color: #3a444c;
+  border-radius: 2px;
+  padding: 3px 8px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .status-message {
-  font-size: 12px;
-  font-weight: bold;
-  color: #61afef;
-  letter-spacing: 1px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #c2ced8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 800px;
-  transition: color 0.15s ease;
+}
+
+.hint-meters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.in-vu-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #7c8a96;
+}
+
+.in-vu-track {
+  width: 44px;
+  height: 6px;
+  background: #101418;
+  border: 1px solid #262e34;
+}
+
+#input-vu-bar {
+  width: 0%;
+  height: 100%;
+  background: var(--fl-green);
 }
 
 .midi-indicators {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 7px;
 }
 
 .midi-indicator {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  font-weight: bold;
-  color: #5c6370;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #7c8a96;
 }
 
 .mini-led {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #282c34;
-  border: 1px solid #14171a;
+  background: #2c343b;
+  border: 1px solid #14181b;
 }
 
 .mini-led.active {
-  background: #00cec9;
-  box-shadow: 0 0 6px #00cec9;
+  background: var(--fl-orange);
 }
 
-/* FL Studio Playlist Arrangement & Song Chain Bar */
-.song-chain-bar {
-  background:
-    repeating-linear-gradient(
-      90deg,
-      #14181f 0px,
-      #14181f 47px,
-      #1c222b 48px
-    );
-  border: 1px solid #2d3644;
-  border-radius: 6px;
-  padding: 8px 12px;
+.toolbar-actions {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
-.chain-header {
+/* ==========================================================================
+   MODE SWITCHER BAR
+   ========================================================================== */
+.mode-switcher-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--fl-titlebar);
+  border: 1px solid var(--fl-border-dark);
+  border-radius: 3px;
+  padding: 4px 8px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.mode-btn {
+  background: #353f47;
+  color: #9ba8b4;
+  border: 1px solid var(--fl-border-dark);
+  padding: 4px 12px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+}
+
+.mode-btn:hover {
+  background: #414d56;
+  color: #e6ecf2;
+}
+
+.mode-btn.active {
+  background: var(--fl-orange);
+  color: #171c20;
+  border-color: #9e5614;
+}
+
+.mode-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.apc-shortcut-strip {
+  font-size: 9.5px;
+  color: #7c8b98;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* ==========================================================================
+   FL STUDIO DOCKED WINDOW CHROME
+   ========================================================================== */
+.fl-window {
+  background: var(--fl-window-bg);
+  border: 1px solid var(--fl-border-dark);
+  border-radius: 3px;
+  box-shadow: inset 0 1px 0 var(--fl-highlight-top), 0 1px 3px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.fl-window-titlebar {
+  background: var(--fl-titlebar);
+  border-bottom: 1px solid #1d2328;
+  padding: 4px 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
   font-size: 10px;
-  font-weight: 800;
-  color: #9aa5b6;
-  letter-spacing: 0.8px;
+  font-weight: 700;
+  color: #b4c0ca;
+  letter-spacing: 0.4px;
+}
+
+.fl-title-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fl-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.fl-title-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  display: inline-block;
+}
+
+.dot-orange { background: var(--fl-orange); }
+.dot-green { background: var(--fl-green); }
+.dot-teal { background: var(--fl-teal); }
+.dot-grey { background: #74828f; }
+
+.fl-mini-tag {
+  font-size: 9px;
+  font-weight: 700;
+  color: #7f8e9b;
+  letter-spacing: 0.4px;
+}
+
+/* ==========================================================================
+   PLAYLIST ARRANGEMENT CHAIN (Authentic FL Grid + Pastel Clip Headers)
+   ========================================================================== */
+.song-chain-bar {
+  display: flex;
+  flex-direction: column;
 }
 
 .chain-blocks {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #242c32 0px,
+      #242c32 59px,
+      #2d373f 60px
+    );
+  padding: 6px 8px;
   display: flex;
-  gap: 6px;
+  gap: 5px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  min-height: 36px;
+  align-items: center;
 }
 
 .chain-block {
-  background: #232a35;
-  border: 1px solid #3b4657;
-  border-top: 3px solid var(--fl-cyan);
-  color: #d4dce8;
-  border-radius: 3px;
-  padding: 5px 12px;
-  font-size: 11px;
-  font-weight: 800;
+  background: #35444d;
+  border: 1px solid #1b2328;
+  border-top: 4px solid #679c8c;
+  color: #dbe6ee;
+  border-radius: 2px;
+  padding: 3px 14px;
+  font-size: 10.5px;
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
-  transition: all 0.1s ease;
 }
 
 .chain-block:hover {
-  background: #2c3543;
+  background: #3f525d;
 }
 
 .chain-block.current {
-  background: linear-gradient(180deg, #352922 0%, #241d19 100%);
+  background: #4e4234;
+  border-top-color: var(--fl-orange);
+  border-color: #261f18;
   color: #ffffff;
-  border-color: var(--fl-orange);
-  border-top: 3px solid var(--fl-lime);
-  box-shadow: 0 0 10px rgba(38, 222, 129, 0.35);
 }
 
-/* FL Studio Channel Rack 16-Step Sequencer & 128th Micro-Timing Inspector */
+/* ==========================================================================
+   FL STUDIO CHANNEL RACK & 60-PRESET SAMPLE PICKER
+   ========================================================================== */
 .minimal-sequencer-box {
-  background: linear-gradient(180deg, #1d222b 0%, #151920 100%);
-  border: 1px solid #313a48;
-  border-radius: 6px;
-  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
+.fl-page-tabs {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.btn-zoom.active,
+.btn-page.active {
+  background: var(--fl-orange);
+  color: #171c20;
+  border-color: #9e5614;
+}
+
+/* Active Channel Strip / Preset Picker Bar */
+.fl-channel-bar {
+  background: #2b3339;
+  border-bottom: 1px solid #1e2429;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.channel-picker-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.preset-picker-group {
+  flex: 1;
+  min-width: 260px;
+}
+
+.fl-select {
+  background: var(--fl-recessed);
+  color: #e4ebf1;
+  border: 1px solid var(--fl-border-dark);
+  border-bottom-color: #3f4a54;
+  border-radius: 2px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  min-width: 220px;
+  flex: 1;
+  max-width: 380px;
+  cursor: pointer;
+}
+
+.fl-select:focus {
+  outline: 1px solid var(--fl-orange);
+}
+
+/* Iconic FL Studio 16-Step Channel Rack Chicklets */
 .step-grid-16 {
   display: grid;
   grid-template-columns: repeat(16, 1fr);
-  gap: 5px;
-  padding: 4px 0;
+  gap: 4px;
+  padding: 8px;
+  background: #262e34;
 }
 
 .step-btn-16 {
   position: relative;
-  aspect-ratio: 0.92;
-  background: linear-gradient(180deg, #3c4553 0%, #2e3540 100%);
-  border: 1px solid #181c22;
-  border-bottom: 3px solid #20252d;
-  border-radius: 4px;
-  color: #aab4c4;
+  height: 38px;
+  background: linear-gradient(180deg, var(--fl-step-grey-top) 0%, var(--fl-step-grey-bot) 100%);
+  border: 1px solid #1a2025;
+  border-bottom: 3px solid #2b3238;
+  border-radius: 3px;
+  color: #d6dde3;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 2px 3px rgba(0, 0, 0, 0.45);
-  transition: transform 0.05s ease, box-shadow 0.08s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: filter 0.05s ease;
 }
 
-/* Iconic FL Studio Channel Rack Alternating 4-Step Beat Grouping (Steps 5-8 & 13-16) */
+/* Iconic FL Studio Beats 2 & 4 Dusty Plum Grouping */
 .step-btn-16.beat-group-alt {
-  background: linear-gradient(180deg, #4b3c47 0%, #392d36 100%);
+  background: linear-gradient(180deg, var(--fl-step-plum-top) 0%, var(--fl-step-plum-bot) 100%);
 }
 
 .step-btn-16:hover {
-  filter: brightness(1.12);
+  filter: brightness(1.1);
 }
 
+/* Iconic FL Studio Lit Step (Warm Off-White Cream Chicklet + Green Play Indicator) */
 .step-btn-16.active {
-  background: linear-gradient(180deg, #ffc069 0%, #ff7828 100%);
-  color: #16181d;
-  border-color: #ffd89b;
-  border-bottom: 3px solid var(--fl-lime);
-  box-shadow: 0 0 10px rgba(255, 120, 40, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  background: linear-gradient(180deg, var(--fl-step-lit-top) 0%, var(--fl-step-lit-bot) 100%);
+  color: #1f2428;
+  border-color: #2b3238;
+  border-bottom: 3px solid var(--fl-orange);
+  box-shadow: inset 0 1px 0 #ffffff;
 }
 
 .step-btn-16.selected-step {
-  box-shadow: 0 0 0 2px var(--fl-cyan), 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.step-btn-16.active.selected-step {
-  box-shadow: 0 0 0 2px var(--fl-cyan), 0 0 12px rgba(255, 120, 40, 0.75);
+  outline: 2px solid var(--fl-teal);
+  outline-offset: -1px;
 }
 
 .step-btn-16.playhead {
-  outline: 2px solid var(--fl-lime);
-  outline-offset: 1px;
+  border-bottom: 3px solid var(--fl-green);
+  box-shadow: inset 0 0 0 2px var(--fl-green);
 }
 
 .step-btn-16.has-plock::after {
@@ -469,48 +769,64 @@ body {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--fl-cyan);
-  box-shadow: 0 0 4px var(--fl-cyan);
+  background: var(--fl-teal);
 }
 
-/* 128th-Note Micro-Timing Offset Badge on Step Chicklets */
 .micro-badge {
   position: absolute;
   top: 2px;
   right: 2px;
-  background: rgba(11, 14, 18, 0.92);
-  color: var(--fl-lime);
-  border: 1px solid var(--fl-lime);
-  border-radius: 3px;
-  padding: 0 3px;
-  font-family: "Courier New", monospace;
+  background: #1b2126;
+  color: var(--fl-orange);
+  border: 1px solid #48545e;
+  border-radius: 2px;
+  padding: 0 2px;
+  font-family: "Consolas", monospace;
   font-size: 8px;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.2;
   pointer-events: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
+/* Step Micro-Timing Inspector Bar */
 .step-inspector-box {
-  background: #11151b !important;
-  border: 1px solid #2b3442 !important;
-  border-left: 3px solid var(--fl-lime) !important;
-  border-radius: 4px;
-  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: #22292f;
+  border-top: 1px solid #1b2025;
+  padding: 5px 8px;
+  font-size: 10.5px;
+  color: #bac6d0;
 }
 
-/* Waveform Canvas Area */
+.inspector-tag {
+  display: inline-block;
+  background: #333e47;
+  color: var(--fl-orange);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 2px;
+  margin-right: 6px;
+}
+
+#step-inspector-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* Integrated Edison Waveform Area */
 .waveform-section {
-  position: relative;
-  background: #14171a;
-  border: 2px solid #2c313a;
-  border-radius: 6px;
-  overflow: hidden;
+  border-top: 1px solid #1b2025;
+  background: #1b2126;
 }
 
 #waveform-canvas {
   width: 100%;
-  height: 80px;
+  height: 76px;
   display: block;
   cursor: crosshair;
 }
@@ -518,22 +834,35 @@ body {
 .waveform-toolbar {
   display: flex;
   justify-content: space-between;
-  padding: 4px 10px;
-  background: #1c2025;
-  border-top: 1px solid #282c34;
-  font-size: 10px;
-  color: #7f8c8d;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #2b3339;
+  border-top: 1px solid #1e2429;
 }
 
-/* 8 Macro Knobs Section */
+.waveform-tools-left {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.waveform-hint-txt {
+  font-size: 9px;
+  color: #7c8a96;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   HARDWARE APC KEY 25 SURFACE (Knobs, 8x5 Pad Matrix, Keybed, MIDI Log)
+   ========================================================================== */
 .knobs-container {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  gap: 8px;
-  background: #22262d;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #333842;
+  gap: 6px;
+  background: #272e34;
+  padding: 8px;
 }
 
 .macro-knob {
@@ -541,138 +870,133 @@ body {
   flex-direction: column;
   align-items: center;
   cursor: ns-resize;
+  padding: 3px;
+  border-radius: 2px;
+}
+
+.macro-knob:hover {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .knob-cap {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: radial-gradient(circle, #3e4451 40%, #21252b 90%);
-  border: 2px solid #181a1f;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  background: radial-gradient(circle at 35% 30%, #4a545d 0%, #2b3238 75%, #1d2227 100%);
+  border: 2px solid #161a1e;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14);
   position: relative;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .knob-indicator {
   width: 3px;
-  height: 16px;
-  background: var(--knob-indicator);
-  border-radius: 2px;
-  transform-origin: 50% 22px;
+  height: 13px;
+  background: var(--fl-orange);
+  border-radius: 1px;
+  transform-origin: 50% 19px;
   transform: rotate(-135deg);
-  margin-top: 3px;
-  box-shadow: 0 0 4px rgba(255, 159, 67, 0.8);
+  margin-top: 2px;
 }
 
 .knob-label {
-  font-size: 8px;
-  font-weight: 800;
-  color: #abb2bf;
-  letter-spacing: 0.5px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #b4c0ca;
   text-align: center;
-  margin-bottom: 2px;
   text-transform: uppercase;
 }
 
 .knob-val {
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-  font-weight: 900;
-  color: #ff9f43;
+  font-family: "Consolas", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fl-orange);
 }
 
-/* 8x5 Pad Matrix & Scene Buttons */
+/* 8x5 Hardware Pad Matrix */
 .apc-grid-wrapper {
   display: flex;
-  gap: 12px;
-  background: #1c2025;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #2d333b;
+  gap: 8px;
+  background: #23292e;
+  padding: 8px;
 }
 
 .apc-matrix {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .pad-row {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  gap: 6px;
+  gap: 5px;
 }
 
 .apc-pad {
-  aspect-ratio: 1.25;
-  background: var(--pad-off);
-  border: 1px solid var(--pad-border);
-  border-radius: 4px;
-  color: #7f8c8d;
+  height: 38px;
+  background: #30383f;
+  border: 1px solid #191e22;
+  border-radius: 3px;
+  color: #8c9aa6;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   position: relative;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 3px rgba(0, 0, 0, 0.3);
-  transition: all 0.06s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: background 0.05s ease;
 }
 
 .apc-pad:active,
 .apc-pad.pressed {
-  transform: scale(0.97);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+  transform: translateY(1px);
 }
 
 .pad-num {
-  font-size: 12px;
-  font-weight: 900;
-  font-family: "Courier New", monospace;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .pad-sub {
-  font-size: 8px;
+  font-size: 7.5px;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  opacity: 0.8;
+  opacity: 0.78;
 }
 
-/* Pad LED States */
+/* Authentic Physical APC Key 25 Mk1 Tri-Color Pad LEDs */
 .apc-pad.led-green {
-  background: #1e3d2f;
-  border-color: var(--led-green);
-  color: #ffffff;
-  box-shadow: 0 0 10px var(--led-green-glow);
+  background: #295234;
+  border-color: #4cd16d;
+  color: #eef9f0;
 }
 
 .apc-pad.led-amber {
-  background: #4a3818;
-  border-color: var(--led-amber);
-  color: #ffffff;
-  box-shadow: 0 0 12px var(--led-amber-glow);
+  background: #61471d;
+  border-color: #f2a23a;
+  color: #fff6e5;
 }
 
 .apc-pad.led-red {
-  background: #4a1f1f;
-  border-color: var(--led-red);
-  color: #ffffff;
-  box-shadow: 0 0 12px var(--led-red-glow);
+  background: #612626;
+  border-color: #e84c4c;
+  color: #ffecec;
 }
 
 @keyframes blink-green {
-  0%, 100% { background: #2ecc71; box-shadow: 0 0 14px #2ecc71; }
-  50% { background: #13241c; box-shadow: none; }
+  0%, 100% { background: #3b8a4e; border-color: #6df08c; }
+  50% { background: #1e3324; border-color: #2b4d34; }
 }
 
 @keyframes blink-red {
-  0%, 100% { background: #e74c3c; box-shadow: 0 0 16px #e74c3c; }
-  50% { background: #1a0a0a; box-shadow: none; }
+  0%, 100% { background: #c43c3c; border-color: #ff7070; }
+  50% { background: #361919; border-color: #542424; }
 }
 
 .apc-pad.led-green-blink {
@@ -685,122 +1009,112 @@ body {
   color: #ffffff;
 }
 
-/* Scene Buttons Column */
 .apc-scenes {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 90px;
-  gap: 6px;
+  width: 84px;
+  gap: 5px;
 }
 
 .scene-btn {
   flex: 1;
-  background: #282c34;
-  border: 1px solid #3e4451;
-  border-radius: 4px;
-  color: #abb2bf;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.8px;
+  background: linear-gradient(180deg, #3c464e 0%, #313940 100%);
+  border: 1px solid #191e22;
+  border-radius: 2px;
+  color: #c2ccd4;
+  font-size: 9.5px;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.4);
-}
-
-.scene-btn:active {
-  transform: translateY(1px);
+  gap: 5px;
 }
 
 .scene-led {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #14171a;
+  background: #1b2025;
 }
 
-.scene-led-green .scene-led { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
-.scene-led-red .scene-led { background: #e74c3c; box-shadow: 0 0 8px #e74c3c; }
-.scene-led-amber .scene-led { background: #f39c12; box-shadow: 0 0 8px #f39c12; }
+.scene-led-green .scene-led { background: #4cd16d; }
+.scene-led-red .scene-led { background: #e84c4c; }
+.scene-led-amber .scene-led { background: #f2a23a; }
 
 /* 25-Key Piano Keyboard */
 .keyboard-section {
-  background: #181a1f;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #282c34;
+  background: #23292e;
+  padding: 8px;
 }
 
 .keyboard-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .octave-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .kbd-btn {
-  background: #2c313a;
-  border: 1px solid #3e4451;
-  color: #abb2bf;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: bold;
+  background: #3a434a;
+  border: 1px solid #191e22;
+  color: #cdd5dc;
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-size: 9.5px;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .oct-display {
-  font-family: "Courier New", monospace;
+  font-family: "Consolas", monospace;
   font-size: 11px;
-  font-weight: 900;
-  color: #e67e22;
+  font-weight: 700;
+  color: var(--fl-orange);
 }
 
 .kbd-mode-badge {
-  font-size: 10px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  color: #61afef;
-  background: #1e2227;
-  padding: 3px 8px;
-  border-radius: 3px;
-  border: 1px solid #2d333b;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #b4c0ca;
+  background: #1c2227;
+  padding: 2px 7px;
+  border-radius: 2px;
+  border: 1px solid #161a1e;
 }
 
 .piano-bed {
   display: flex;
   position: relative;
-  height: 105px;
-  background: #0d0f12;
-  border-radius: 4px;
-  padding: 4px 6px;
+  height: 92px;
+  background: #161b1f;
+  border-radius: 2px;
+  padding: 3px 4px;
   overflow: hidden;
 }
 
 .piano-key {
   position: relative;
   cursor: pointer;
-  border-radius: 0 0 4px 4px;
+  border-radius: 0 0 3px 3px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
-  padding-bottom: 6px;
+  padding-bottom: 5px;
 }
 
 .white-key {
   flex: 1;
-  background: linear-gradient(to bottom, #eeeeee 0%, #ffffff 85%, #cccccc 100%);
-  border: 1px solid #999999;
+  background: linear-gradient(to bottom, #e6e8ea 0%, #f5f6f7 85%, #cfd4d8 100%);
+  border: 1px solid #7d868e;
   border-top: none;
   z-index: 1;
   height: 100%;
@@ -808,76 +1122,58 @@ body {
 
 .white-key:active,
 .white-key.key-active {
-  background: linear-gradient(to bottom, #cccccc 0%, #e0e0e0 100%);
-  transform: translateY(2px);
+  background: #f0be84;
+  transform: translateY(1px);
 }
 
 .black-key {
   width: 3.5%;
   height: 62%;
-  background: linear-gradient(to bottom, #111111 0%, #333333 90%, #000000 100%);
-  border: 1px solid #000000;
+  background: linear-gradient(to bottom, #262c31 0%, #171b1e 90%, #0d1012 100%);
+  border: 1px solid #0b0d0f;
   margin-left: -1.75%;
   margin-right: -1.75%;
   z-index: 2;
-  border-radius: 0 0 3px 3px;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.8);
+  border-radius: 0 0 2px 2px;
 }
 
 .black-key:active,
 .black-key.key-active {
-  background: #ff5722;
-  transform: translateY(2px);
+  background: var(--fl-orange);
+  transform: translateY(1px);
 }
 
 .key-label {
   font-size: 8px;
-  font-weight: 800;
-  color: #4b5263;
+  font-weight: 700;
+  color: #465059;
 }
 
 .white-key.key-active .key-label {
-  color: #ff5722;
-  font-weight: 900;
+  color: #171c20;
 }
 
 .black-key .key-label {
-  color: #888888;
+  color: #9ba8b4;
 }
 
 .key-shortcut {
   font-size: 7px;
-  color: #888888;
-  opacity: 0.6;
+  color: #7c8791;
 }
 
 /* Real-Time MIDI Activity Monitor */
 .midi-monitor-section {
-  background: #0d0f12;
-  border: 1px solid #282c34;
-  border-radius: 6px;
-  padding: 10px;
-  font-family: "Courier New", monospace;
-}
-
-.monitor-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-  font-size: 11px;
-  font-weight: bold;
-  color: #61afef;
+  font-family: "Consolas", monospace;
 }
 
 .monitor-log-table {
-  height: 100px;
+  height: 76px;
   overflow-y: auto;
-  border: 1px solid #1c2025;
-  background: #080a0c;
-  padding: 4px;
+  background: #181d22;
+  padding: 4px 8px;
   font-size: 10px;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .log-entry {
@@ -885,14 +1181,16 @@ body {
   gap: 8px;
 }
 
-.log-in { color: #2ecc71; }
-.log-out { color: #f39c12; }
+.log-in { color: #7ec769; }
+.log-out { color: #d89a4c; }
 
-/* Modals */
+/* ==========================================================================
+   MODALS
+   ========================================================================== */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(15, 19, 22, 0.78);
   display: none;
   justify-content: center;
   align-items: center;
@@ -904,123 +1202,365 @@ body {
 }
 
 .modal-content {
-  background: #21252b;
-  border: 2px solid #3e4451;
-  border-radius: 8px;
-  width: 90%;
+  background: var(--fl-window-bg);
+  border: 1px solid #14181c;
+  border-radius: 3px;
+  width: 92%;
   max-width: 650px;
-  max-height: 85vh;
+  max-height: 88vh;
   overflow-y: auto;
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  padding: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
 }
 
 .modal-title {
-  font-size: 16px;
-  font-weight: 900;
-  color: #ff5722;
-  margin-bottom: 14px;
-  letter-spacing: 1px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--fl-orange);
+  margin-bottom: 12px;
+  letter-spacing: 0.6px;
 }
 
 .modal-group {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .modal-group label {
   display: block;
-  font-size: 11px;
-  font-weight: 800;
-  color: #abb2bf;
-  margin-bottom: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #b4c0ca;
+  margin-bottom: 4px;
   text-transform: uppercase;
 }
 
 .modal-select {
   width: 100%;
-  background: #181a1f;
-  color: #abb2bf;
-  border: 1px solid #3e4451;
-  padding: 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  background: var(--fl-recessed);
+  color: #dce3ea;
+  border: 1px solid #181d21;
+  padding: 6px 8px;
+  border-radius: 2px;
+  font-size: 11px;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
-  gap: 8px;
+  margin-top: 14px;
+  gap: 6px;
 }
 
 /* ==========================================================================
-   VIEW TOGGLING (Minimal vs Debug)
+   VIEW TOGGLING (Studio View vs Minimal PO-33 Screen)
    ========================================================================== */
-
-/* When in MINIMAL View: hide full hardware emulation & MIDI monitor */
-body.view-minimal #debug-hardware-section {
+body.view-debug #po-screen-wrapper {
   display: none;
 }
-body.view-minimal .minimal-arrangement-section {
-  display: flex;
-}
 
-/* When in DEBUG View: show everything */
 body.view-debug #debug-hardware-section {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 6px;
+}
+
+body.view-minimal #po-screen-wrapper {
+  display: block;
+}
+
+body.view-minimal #debug-hardware-section,
+body.view-minimal #mixer-rack-section,
+body.view-minimal .waveform-section {
+  display: none !important;
 }
 
 /* ==========================================================================
-   MOBILE RESPONSIVENESS (Phones & Tablets)
+   FLOATING APC KEY 25 SVG HARDWARE TOOLTIP & ABLETON-STYLE INFO VIEW DOCK
    ========================================================================== */
+.apc-floating-tooltip {
+  position: fixed;
+  z-index: 1500;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 0.1s ease, transform 0.1s ease;
+  background: #272f36;
+  border: 1px solid #13171b;
+  border-top: 2px solid var(--fl-orange);
+  border-radius: 3px;
+  padding: 7px 9px;
+  width: 264px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.65);
+  color: #d6dde3;
+}
 
+.apc-floating-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.apc-tip-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.apc-tip-badge {
+  background: var(--fl-orange);
+  color: #171c20;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 2px;
+  letter-spacing: 0.4px;
+  flex-shrink: 0;
+}
+
+.apc-tip-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: #eef3f7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.apc-tip-shortcut {
+  font-family: "Consolas", "SF Mono", monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #f2be85;
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+
+.apc-tip-desc {
+  font-size: 9.5px;
+  color: #9ba9b5;
+  margin-bottom: 5px;
+  line-height: 1.3;
+}
+
+.apc-tip-svg-wrap {
+  display: flex;
+  justify-content: center;
+  background: #171c20;
+  border: 1px solid #121619;
+  border-radius: 2px;
+  padding: 4px;
+  margin-top: 4px;
+}
+
+.apc-mini-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+@keyframes apc-hl-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.68; }
+}
+
+.apc-svg-hl {
+  animation: apc-hl-pulse 1.0s ease-in-out infinite;
+}
+
+/* Ableton Live-Style Docked Bottom-Left Info View Box */
+.apc-info-view-dock {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  width: 284px;
+  z-index: 1200;
+  background: #2b333a;
+  border: 1px solid #13171b;
+  border-top: 2px solid var(--fl-teal);
+  border-radius: 3px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  display: none;
+  flex-direction: column;
+}
+
+.apc-info-view-dock.open {
+  display: flex;
+}
+
+.info-dock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #22282e;
+  border-bottom: 1px solid #171c20;
+  padding: 4px 7px;
+}
+
+.info-dock-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #b4c0ca;
+  letter-spacing: 0.4px;
+}
+
+.info-dock-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.info-dock-body {
+  padding: 8px;
+}
+
+/* ==========================================================================
+   FIRST-RUN GUIDED WALKTHROUGH TOUR (HAND-HOLDING ONBOARDING)
+   ========================================================================== */
+.walkthrough-backdrop {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1400;
+  display: none;
+  pointer-events: none;
+}
+
+.walkthrough-backdrop.open {
+  display: block;
+}
+
+.walkthrough-card {
+  pointer-events: auto;
+  width: 380px;
+  max-width: calc(100vw - 24px);
+  background: #2d353c;
+  border: 1px solid #13171b;
+  border-top: 3px solid var(--fl-orange);
+  border-radius: 3px;
+  padding: 12px 14px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.72);
+  color: #d6dde3;
+}
+
+.wt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.wt-step-badge {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--fl-orange);
+  letter-spacing: 0.6px;
+}
+
+.wt-progress-track {
+  height: 3px;
+  background: #1b2126;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.wt-progress-fill {
+  height: 100%;
+  background: var(--fl-orange);
+  transition: width 0.2s ease;
+}
+
+.wt-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f0f4f8;
+  margin-bottom: 6px;
+}
+
+.wt-body {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #bcc7d1;
+  margin-bottom: 10px;
+}
+
+.wt-apc-box {
+  background: #1f252b;
+  border: 1px solid #161b1f;
+  border-radius: 2px;
+  padding: 7px;
+  margin-bottom: 10px;
+}
+
+.wt-apc-label {
+  font-family: "Consolas", monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #f2be85;
+  margin-bottom: 6px;
+  line-height: 1.35;
+}
+
+.wt-apc-svg {
+  display: flex;
+  justify-content: center;
+}
+
+.wt-try-row {
+  margin-bottom: 10px;
+}
+
+.wt-try-row .fl-btn {
+  width: 100%;
+  padding: 6px 10px;
+}
+
+.wt-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #22282d;
+}
+
+.wt-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.wt-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #434f59;
+  cursor: pointer;
+}
+
+.wt-dot.done {
+  background: #73bf57;
+}
+
+.wt-dot.active {
+  background: var(--fl-orange);
+  transform: scale(1.2);
+}
+
+.walkthrough-spotlight {
+  outline: 2px solid var(--fl-orange) !important;
+  outline-offset: 2px;
+  position: relative;
+  z-index: 20;
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS
+   ========================================================================== */
 @media (max-width: 768px) {
-  body {
-    padding: 6px;
-  }
-
-  .chassis {
-    padding: 10px;
-    gap: 10px;
-  }
-
-  .brand-logo {
-    font-size: 18px;
-  }
-
-  .brand-sub {
-    display: none;
-  }
-
-  .lcd-top-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .knobs-container {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-  }
-
-  .step-grid-16 {
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-  }
-
-  .piano-bed {
-    height: 80px;
-  }
-
-  .apc-grid-wrapper {
-    flex-direction: column;
-  }
-
-  .apc-scenes {
-    flex-direction: row;
-    width: 100%;
-    height: 40px;
-  }
+  body { padding: 4px; }
+  .apc-shortcut-strip { display: none; }
+  .knobs-container { grid-template-columns: repeat(4, 1fr); }
+  .step-grid-16 { grid-template-columns: repeat(8, 1fr); }
+  .piano-bed { height: 74px; }
+  .apc-grid-wrapper { flex-direction: column; }
+  .apc-scenes { flex-direction: row; width: 100%; height: 34px; }
 }

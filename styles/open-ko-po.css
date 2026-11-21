@@ -319,45 +319,21 @@
   display: block;
 }
 
-/* In Minimal View: make the PO screen primary and hide cluttered generic panels */
+/* View Switching Rules: Minimal PO-33 Screen only visible in Minimal View */
 body.view-minimal #po-screen-wrapper {
   display: block;
-  margin-bottom: 12px;
-}
-
-body.view-minimal .lcd-display {
-  display: none !important;
-}
-
-body.view-minimal .waveform-section {
-  display: none !important;
-}
-
-body.view-minimal #debug-hardware-section {
-  display: none !important;
-}
-
-body.view-minimal #mixer-rack-section {
-  display: none !important;
 }
 
 body.view-debug #po-screen-wrapper {
-  display: block;
-  margin-bottom: 12px;
+  display: none;
 }
 
 /* ==========================================================================
-   16-Track FL Studio Insert Mixer & Master DSP Effects Rack
+   FL STUDIO 21 INSERT MIXER (16 Vertical Insert Strips + Master FX Slots)
    ========================================================================== */
 .mixer-rack-panel {
-  background: linear-gradient(180deg, #1a1f27 0%, #13171d 100%);
-  border: 1px solid #2e3746;
-  border-radius: 8px;
-  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45);
 }
 
 .mixer-rack-panel.collapsed #mixer-strips-container,
@@ -365,67 +341,52 @@ body.view-debug #po-screen-wrapper {
   display: none !important;
 }
 
-.mixer-rack-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #29313e;
-  padding-bottom: 6px;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 .mixer-title {
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-  font-weight: 900;
-  color: #26de81;
-  letter-spacing: 1px;
-}
-
-.mixer-badge {
-  font-size: 9px;
-  font-weight: 800;
-  background: #1d242e;
-  color: #18dcff;
-  padding: 2px 7px;
-  border-radius: 3px;
-  border: 1px solid #303b4a;
+  font-size: 10px;
+  font-weight: 700;
+  color: #c2ced8;
+  letter-spacing: 0.4px;
 }
 
 .mixer-strips-scroll {
   display: grid;
-  grid-template-columns: repeat(16, minmax(60px, 1fr));
-  gap: 5px;
+  grid-template-columns: repeat(16, minmax(64px, 1fr));
+  gap: 3px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 6px 8px;
+  background: #232a30;
 }
 
 .mixer-strip {
-  background: linear-gradient(180deg, #232933 0%, #191e26 100%);
-  border: 1px solid #2e3744;
-  border-radius: 4px;
-  padding: 6px 4px;
+  background: linear-gradient(180deg, #353e46 0%, #2b333a 100%);
+  border: 1px solid #191f24;
+  border-radius: 2px;
+  padding: 5px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
   position: relative;
-  transition: all 0.1s ease;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.mixer-strip:hover {
+  background: linear-gradient(180deg, #3c464f 0%, #313a42 100%);
 }
 
 .mixer-strip.strip-melodic {
-  border-top: 3px solid #18dcff;
+  border-top: 3px solid #5c91ab;
 }
 
 .mixer-strip.strip-drum {
-  border-top: 3px solid #ff7828;
+  border-top: 3px solid #c97f45;
 }
 
 .mixer-strip.active-slot {
-  border-color: #26de81;
-  background: linear-gradient(180deg, #28333a 0%, #1c242b 100%);
-  box-shadow: 0 0 10px rgba(38, 222, 129, 0.3);
+  background: linear-gradient(180deg, #434f59 0%, #36414a 100%);
+  border-color: #7c90a0;
+  box-shadow: inset 0 0 0 1px rgba(232, 140, 56, 0.55);
 }
 
 .strip-header {
@@ -433,49 +394,48 @@ body.view-debug #po-screen-wrapper {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  font-size: 8px;
-  font-weight: 900;
+  font-size: 8.5px;
+  font-weight: 700;
 }
 
 .strip-num {
-  color: #abb2bf;
+  color: #9ba8b4;
 }
 
 .strip-type-badge {
   font-size: 7px;
   padding: 1px 3px;
   border-radius: 2px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .strip-type-badge.badge-mel {
-  background: rgba(0, 206, 201, 0.15);
-  color: #00cec9;
+  background: #253640;
+  color: #88bed6;
 }
 
 .strip-type-badge.badge-drm {
-  background: rgba(255, 159, 67, 0.15);
-  color: #ff9f43;
+  background: #3d2d20;
+  color: #e0a574;
 }
 
 .strip-led {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #2b313a;
-  transition: background 0.05s ease;
+  background: #1d2328;
+  border: 1px solid #14181c;
 }
 
 .strip-led.active {
-  background: #2ecc71;
-  box-shadow: 0 0 6px #2ecc71;
+  background: #73bf57;
 }
 
 .strip-name {
-  font-size: 8px;
-  font-weight: bold;
-  color: #ffffff;
-  max-width: 52px;
+  font-size: 8.5px;
+  font-weight: 600;
+  color: #dde4eb;
+  max-width: 58px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -483,181 +443,211 @@ body.view-debug #po-screen-wrapper {
 }
 
 .strip-steps-badge {
-  font-size: 7px;
-  font-family: monospace;
-  color: #5c6370;
+  font-size: 7.5px;
+  font-family: "Consolas", monospace;
+  color: #707e8a;
   text-align: center;
 }
 
 .strip-steps-badge.has-steps {
-  color: #2ecc71;
-  font-weight: bold;
+  color: #9fd18c;
+  font-weight: 700;
 }
 
+/* Authentic Vertical FL Studio Mixer Fader */
 .strip-fader-box {
   width: 100%;
+  height: 66px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #1c2227;
+  border: 1px solid #151a1e;
+  border-radius: 2px;
   padding: 2px 0;
 }
 
 .strip-fader {
-  width: 100%;
+  width: 56px;
   height: 4px;
+  transform: rotate(-90deg);
   -webkit-appearance: none;
-  background: #2c313a;
-  border-radius: 2px;
+  appearance: none;
+  background: #101417;
+  border-radius: 1px;
   outline: none;
+  cursor: ns-resize;
 }
 
 .strip-fader::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #ff5722;
-  cursor: pointer;
+  appearance: none;
+  width: 11px;
+  height: 18px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #5d6973 0%, #808d98 48%, #4d5861 52%, #68747e 100%);
+  border: 1px solid #171c20;
+  cursor: ns-resize;
+}
+
+.strip-fader::-moz-range-thumb {
+  width: 11px;
+  height: 18px;
+  border-radius: 2px;
+  background: #6d7984;
+  border: 1px solid #171c20;
+  cursor: ns-resize;
 }
 
 .strip-btn-row {
   display: flex;
-  gap: 3px;
+  gap: 2px;
   width: 100%;
 }
 
 .strip-btn {
   flex: 1;
   font-size: 8px;
-  font-weight: 900;
+  font-weight: 700;
   padding: 2px 0;
-  background: #282c34;
-  color: #828997;
-  border: 1px solid #3e4451;
+  background: #272f36;
+  color: #8f9da8;
+  border: 1px solid #181d22;
   border-radius: 2px;
   cursor: pointer;
 }
 
-.strip-mute-btn.active {
-  background: #e74c3c;
+.strip-btn:hover {
   color: #ffffff;
-  border-color: #e74c3c;
-  box-shadow: 0 0 6px rgba(231, 76, 60, 0.6);
+  background: #353f48;
+}
+
+.strip-mute-btn.active {
+  background: #b84242;
+  color: #ffffff;
+  border-color: #4f1a1a;
 }
 
 .strip-solo-btn.active {
-  background: #f39c12;
-  color: #ffffff;
-  border-color: #f39c12;
-  box-shadow: 0 0 6px rgba(243, 156, 18, 0.6);
+  background: #c78b32;
+  color: #171c20;
+  border-color: #543912;
 }
 
 .strip-duck-btn.active {
-  background: rgba(24, 220, 255, 0.22);
-  color: #18dcff;
-  border-color: #18dcff;
-  box-shadow: 0 0 6px rgba(24, 220, 255, 0.45);
+  background: #365769;
+  color: #a9dcf5;
+  border-color: #1c2e38;
 }
 
 .strip-duck-btn.sc-source {
-  background: #ff7828;
-  color: #111418;
-  border-color: #ffb142;
-  box-shadow: 0 0 6px rgba(255, 120, 40, 0.6);
+  background: #e88c38;
+  color: #171c20;
+  border-color: #7d4512;
 }
 
 .strip-jam-btn {
   width: 100%;
   font-size: 8px;
-  font-weight: 900;
-  padding: 3px 0;
-  background: #1f2630;
-  color: #8b96a8;
-  border: 1px solid #323c4a;
+  font-weight: 700;
+  padding: 2px 0;
+  background: #2a3239;
+  color: #93a1ad;
+  border: 1px solid #181d22;
   border-radius: 2px;
   cursor: pointer;
-  letter-spacing: 0.5px;
 }
 
 .strip-jam-btn.active {
-  background: linear-gradient(180deg, #26de81 0%, #1bb867 100%);
-  color: #0b140f;
-  border-color: #4cd995;
-  box-shadow: 0 0 8px rgba(38, 222, 129, 0.5);
+  background: #73bf57;
+  color: #12210d;
+  border-color: #2b4f1e;
 }
 
-/* Master DSP Rack Panel */
+/* Master FX Insert Slots Rack */
 .dsp-rack-panel {
-  background: #131619;
-  border: 1px solid #24292e;
-  border-radius: 6px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.dsp-rack-title {
-  font-family: "Courier New", monospace;
-  font-size: 9px;
-  font-weight: 900;
-  color: #e67e22;
-  letter-spacing: 0.8px;
+  background: #283036;
+  border-top: 1px solid #1b2025;
+  padding: 6px 8px;
 }
 
 .dsp-rack-modules {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .dsp-module {
   flex: 1;
-  min-width: 140px;
-  background: #1a1e23;
-  border: 1px solid #282c34;
-  border-radius: 4px;
-  padding: 6px 8px;
+  min-width: 138px;
+  background: #21272d;
+  border: 1px solid #171c20;
+  border-radius: 2px;
+  padding: 5px 7px;
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
+.dsp-module-fx {
+  flex: 1.75;
+  min-width: 240px;
+}
+
 .dsp-mod-title {
-  font-size: 8px;
-  font-weight: 900;
-  color: #00cec9;
-  letter-spacing: 0.5px;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #9baab7;
+  letter-spacing: 0.4px;
+}
+
+.dsp-title-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .dsp-mod-readout {
-  font-family: monospace;
-  font-size: 9px;
-  font-weight: bold;
-  color: #ff9f43;
+  font-family: "Consolas", monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #e88c38;
 }
 
 .dsp-mod-sub {
-  font-size: 7px;
-  color: #7f8c8d;
+  font-size: 8px;
+  color: #768490;
 }
 
 .comp-meter-wrapper {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  font-size: 8px;
+  font-weight: 700;
+  color: #8896a3;
 }
 
 .comp-meter-bar {
   flex: 1;
   height: 5px;
-  background: #0d0f12;
-  border-radius: 2px;
+  background: #14191d;
+  border: 1px solid #2b333b;
   overflow: hidden;
+}
+
+#sidechain-duck-fill {
+  width: 0%;
+  height: 100%;
+  background: #5ca8d6;
+  transition: width 0.04s linear;
 }
 
 #comp-gr-fill {
   width: 0%;
   height: 100%;
-  background: #e74c3c;
-  transition: width 0.05s ease;
+  background: #e88c38;
+  transition: width 0.04s linear;
 }
 
 .dsp-fx-badges {
@@ -667,20 +657,24 @@ body.view-debug #po-screen-wrapper {
 }
 
 .fx-badge {
-  font-size: 7px;
-  font-weight: 800;
+  font-size: 8px;
+  font-weight: 700;
   padding: 3px 2px;
   text-align: center;
-  background: #202428;
-  color: #7f8c8d;
-  border: 1px solid #2d333b;
+  background: #303940;
+  color: #b7c4cf;
+  border: 1px solid #191e22;
   border-radius: 2px;
   cursor: pointer;
 }
 
-.fx-badge.active {
-  background: #ff5722;
+.fx-badge:hover {
+  background: #3c4750;
   color: #ffffff;
-  border-color: #ff5722;
-  box-shadow: 0 0 6px rgba(255, 87, 34, 0.6);
+}
+
+.fx-badge.active {
+  background: #e88c38;
+  color: #171c20;
+  border-color: #9e5614;
 }

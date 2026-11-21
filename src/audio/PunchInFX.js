@@ -70,6 +70,10 @@ export class PunchInFX {
     this.lpfWet = this.ctx.createGain();
     this.lpfWet.gain.value = 0.0;
 
+    // Dry bypass path for sweep filters (crossfades to 0 when HPF or LPF sweep is held)
+    this.sweepsDry = this.ctx.createGain();
+    this.sweepsDry.gain.value = 1.0;
+
     // 6. Sidechain Duck Pump Gain
     this.pumpGain = this.ctx.createGain();
     this.pumpGain.gain.value = 1.0;
@@ -153,7 +157,8 @@ export class PunchInFX {
     this.lpfSweep.connect(this.lpfWet);
 
     const postSweeps = ctx.createGain();
-    preSweeps.connect(postSweeps); // Dry thru
+    preSweeps.connect(this.sweepsDry);
+    this.sweepsDry.connect(postSweeps); // Dry thru (crossfaded out during HPF/LPF sweeps)
     this.hpfWet.connect(postSweeps);
     this.lpfWet.connect(postSweeps);
 
@@ -271,11 +276,15 @@ export class PunchInFX {
         try {
           if (active) {
             this.hpfSweep.frequency.cancelScheduledValues(now);
-            this.hpfSweep.frequency.setValueAtTime(30, now);
+            this.hpfSweep.frequency.setValueAtTime(120, now);
             this.hpfSweep.frequency.exponentialRampToValueAtTime(3800, now + 0.35);
-            this.hpfWet.gain.setTargetAtTime(0.9, now, 0.015);
+            this.hpfWet.gain.setTargetAtTime(1.0, now, 0.015);
+            this.sweepsDry.gain.setTargetAtTime(0.0, now, 0.015);
           } else {
-            this.hpfWet.gain.setTargetAtTime(0.0, now, 0.04);
+            this.hpfWet.gain.setTargetAtTime(0.0, now, 0.03);
+            if (!this.activeFx.has(5)) {
+              this.sweepsDry.gain.setTargetAtTime(1.0, now, 0.03);
+            }
             this.hpfSweep.frequency.setValueAtTime(30, now + 0.05);
           }
         } catch (e) {}
@@ -287,11 +296,15 @@ export class PunchInFX {
         try {
           if (active) {
             this.lpfSweep.frequency.cancelScheduledValues(now);
-            this.lpfSweep.frequency.setValueAtTime(19000, now);
+            this.lpfSweep.frequency.setValueAtTime(16000, now);
             this.lpfSweep.frequency.exponentialRampToValueAtTime(220, now + 0.35);
-            this.lpfWet.gain.setTargetAtTime(0.9, now, 0.015);
+            this.lpfWet.gain.setTargetAtTime(1.0, now, 0.015);
+            this.sweepsDry.gain.setTargetAtTime(0.0, now, 0.015);
           } else {
-            this.lpfWet.gain.setTargetAtTime(0.0, now, 0.04);
+            this.lpfWet.gain.setTargetAtTime(0.0, now, 0.03);
+            if (!this.activeFx.has(4)) {
+              this.sweepsDry.gain.setTargetAtTime(1.0, now, 0.03);
+            }
             this.lpfSweep.frequency.setValueAtTime(20000, now + 0.05);
           }
         } catch (e) {}

@@ -9,6 +9,10 @@ import { PunchInFX } from '../src/audio/PunchInFX.js';
 import { ProjectManager, PROJECT_STORAGE_KEY } from '../src/project/ProjectManager.js';
 import { MidiManager } from '../src/midi/MidiManager.js';
 import { AudioExporter } from '../src/audio/AudioExporter.js';
+import { SampleSlot } from '../src/audio/SampleSlot.js';
+import { GuidedTester } from '../src/ui/GuidedTester.js';
+import { ApcHardwareHelp } from '../src/ui/ApcHardwareHelp.js';
+import { GuidedWalkthrough } from '../src/ui/GuidedWalkthrough.js';
 
 function createMockAudioContext() {
   return {
@@ -434,5 +438,136 @@ export function runMicroTimingAndSidechainTests(test) {
     // Verify exact equivalence at 8x zoom (step 34 = Beat 2 + 2 ticks)
     const tZoom8 = AudioExporter.computeStepEventTime(0.0, 34, 120, 8, 50, 0);
     assert.ok(Math.abs(tZoom8 - tLate2) < 1e-9, '8x step 34 matches 1x step 4 (+2/128th) to the nanosecond');
+  });
+
+  test('Sequencer: Synchronous pause & concurrent resume guard prevent Play/Pause from ever getting stuck', async (assert) => {
+    const mockCtx = createMockAudioContext();
+    let resolveUnlock = null;
+    const mockEngine = {
+      ctx: mockCtx,
+      ensureAudioContext: () => new Promise((res) => { resolveUnlock = res; }),
+      slots: new Array(16).fill(null).map(() => ({ stopAll: () => {}, type: 'melodic' })),
+      playSlotDirect: () => {},
+      punchInFx: { setBpm: () => {} }
+    };
+
+    const seq = new Sequencer(mockEngine);
+    // Fire two concurrent resumes before AudioContext promise resolves
+    const p1 = seq.resume();
+    const timerAfterFirst = seq._timerId;
+    const p2 = seq.resume();
+    assert.strictEqual(seq._timerId, timerAfterFirst, 'Concurrent resume did not leak or overwrite scheduler interval');
+    assert.strictEqual(seq.isPlaying, true, 'isPlaying locked synchronously');
+
+    // Pause synchronously even before unlock resolves!
+    const pauseRes = await seq.togglePlayPause();
+    assert.strictEqual(pauseRes, false, 'togglePlayPause paused immediately');
+    assert.strictEqual(seq.isPlaying, false, 'Sequencer paused cleanly');
+    assert.strictEqual(seq.isPaused, true, 'Paused flag set');
+    assert.strictEqual(seq._timerId, null, 'Scheduler interval cleared completely');
+
+    if (resolveUnlock) resolveUnlock();
+    await Promise.all([p1, p2]);
+    assert.strictEqual(seq.isPlaying, false, 'Resolving pending audio promise does not resurrect paused playback');
+  });
+
+  test('MidiManager: Targeted LED echo filter blocks loopback echoes (<127) without dropping human Play/Pause or Pad presses (vel 127)', (assert) => {
+    const midi = new MidiManager();
+    midi.activeOutput = { send: () => {} };
+    let playCount = 0;
+    let slotSelected = -1;
+    midi.callbacks.onTransportPlayPause = () => { playCount++; };
+    midi.callbacks.onSlotSelect = (idx) => { slotSelected = idx; };
+
+    // Send LED ON (vel 1) to Play/Pause (Note 91) and LED AMBER (vel 5) to Pad (Note 24)
+    midi.sendLed(91, 1);
+    midi.sendLed(24, 5);
+
+    // 1. Exact virtual loopback echo (vel 1) within 40ms IS suppressed
+    midi.handleMidiMessage({ data: [0x90, 91, 1] });
+    assert.strictEqual(playCount, 0, 'Loopback LED echo (vel 1) suppressed');
+
+    // 2. Real human physical button press (vel 127) immediately after LED update MUST NOT be dropped!
+    midi.handleMidiMessage({ data: [0x90, 91, 127] });
+    assert.strictEqual(playCount, 1, 'Physical Play/Pause press (vel 127) delivered immediately');
+
+    // 3. Real human Sound Pad tap immediately after LED update in Sample Mode MUST NOT be dropped!
+    midi.setOperationalMode('sample');
+    midi.handleMidiMessage({ data: [0x90, 24, 127] });
+    assert.strictEqual(slotSelected, 8, 'Physical Sample Mode Drum Slot 9 pad press (vel 127) delivered immediately');
+  });
+
+  test('SampleSlot.getPitchOnlyBuffer: High-octave (+12 ST) pitch shift preserves full sample duration with zero half-length cutoff', (assert) => {
+    const mockCtx = createMockAudioContext();
+    const slot = new SampleSlot(0, 'melodic', 'Test Sine');
+    const sr = 44100;
+    const buf = mockCtx.createBuffer(2, sr, sr); // 1.0s
+    const chL = buf.getChannelData(0);
+    const chR = buf.getChannelData(1);
+    for (let i = 0; i < sr; i++) {
+      const v = Math.sin(2 * Math.PI * 261.63 * (i / sr)) * 0.8;
+      chL[i] = v;
+      chR[i] = v;
+    }
+    slot.loadBuffer(buf);
+
+    const shifted = slot.getPitchOnlyBuffer(mockCtx, 12); // +1 octave (R = 2.0)
+    assert.strictEqual(shifted.length, buf.length, 'Shifted buffer keeps exact 1.0s sample length');
+
+    // Check energy in the second half (0.55s to 0.90s) — previously zeroed out!
+    const outL = shifted.getChannelData(0);
+    let latePeak = 0;
+    for (let i = Math.floor(sr * 0.55); i < Math.floor(sr * 0.90); i++) {
+      const a = Math.abs(outL[i]);
+      if (a > latePeak) latePeak = a;
+    }
+    assert.ok(latePeak > 0.2, `Second half of +12 ST pitch-only buffer retains full energy (peak=${latePeak.toFixed(3)})`);
+  });
+
+  test('PunchInFX: HPF Sweep and LPF Sub-Drop crossfade dry path out when active and restore dry on release', (assert) => {
+    const mockCtx = createMockAudioContext();
+    const dryTargets = [];
+    const pfx = new PunchInFX(mockCtx);
+    pfx.sweepsDry.gain.setTargetAtTime = (val) => dryTargets.push(val);
+
+    pfx.trigger(4, true); // HPF Sweep ON
+    assert.strictEqual(dryTargets[dryTargets.length - 1], 0.0, 'Dry signal crossfaded to 0 during HPF Sweep');
+
+    pfx.trigger(4, false); // HPF Sweep OFF
+    assert.strictEqual(dryTargets[dryTargets.length - 1], 1.0, 'Dry signal restored to 1.0 on HPF release');
+
+    pfx.trigger(5, true); // LPF Sub-Drop ON
+    assert.strictEqual(dryTargets[dryTargets.length - 1], 0.0, 'Dry signal crossfaded to 0 during LPF Sub-Drop');
+
+    pfx.trigger(5, false); // LPF Sub-Drop OFF
+    assert.strictEqual(dryTargets[dryTargets.length - 1], 1.0, 'Dry signal restored to 1.0 on LPF release');
+  });
+
+  test('GuidedTester: Detects APC Key 25 Channel 2 Octave Up and Octave Down transposition accurately', (assert) => {
+    const midi = new MidiManager();
+    const mockAudio = { playActiveSlot: () => {}, stopActiveSlot: () => {}, setSustain: () => {} };
+    const tester = new GuidedTester(midi, mockAudio);
+
+    assert.strictEqual(midi.keyboardBaseNote, 48, 'Default base note is C3 (48)');
+
+    // Press high key E5 (Note 76) after user hits physical OCT UP on APC Key 25 Mk1
+    tester._handleTestMidi({ status: 0x91, channel: 2, d1: 76, d2: 100, command: 0x90 });
+    assert.strictEqual(midi.keyboardBaseNote, 60, 'Detected Octave Up shift to C4 (Note 60)');
+    assert.ok(tester.testedButtons.has('oct_up'), 'Recorded oct_up verification');
+
+    // Press low key C2 (Note 36) after user hits physical OCT DOWN
+    tester._handleTestMidi({ status: 0x91, channel: 2, d1: 36, d2: 100, command: 0x90 });
+    assert.strictEqual(midi.keyboardBaseNote, 36, 'Detected Octave Down shift to C2 (Note 36)');
+    assert.ok(tester.testedButtons.has('oct_dn'), 'Recorded oct_dn verification');
+  });
+
+  test('ApcHardwareHelp & GuidedWalkthrough: Generates live APC Key 25 SVG model with highlights and 10-step onboarding tour', (assert) => {
+    const svg = ApcHardwareHelp.renderApcSvg(['shift', 'pad-1-2', 'knob-2', 'keys'], true);
+    assert.ok(svg.includes('<svg') && svg.includes('AKAI APC KEY 25 MK1'), 'Rendered valid APC Key 25 Mk1 schematic SVG');
+    assert.ok(svg.includes('apc-svg-hl'), 'Highlighted target hardware controls in SVG');
+
+    const wt = new GuidedWalkthrough({});
+    assert.strictEqual(wt.steps.length, 10, 'Guided walkthrough defines 10 comprehensive onboarding steps');
+    assert.ok(wt.steps.every(s => Array.isArray(s.controls) && s.controls.length > 0), 'Every walkthrough step includes APC Key 25 SVG control highlights');
   });
 }

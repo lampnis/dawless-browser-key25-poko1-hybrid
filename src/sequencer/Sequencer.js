@@ -131,29 +131,43 @@ export class Sequencer {
   /**
    * Transport: Play/Pause Button
    * Keeps playhead at current step timestamp when paused, and resumes from that step!
+   * Pausing is strictly synchronous so Play/Pause can NEVER hang or get stuck.
    */
   async togglePlayPause() {
-    await this.audioEngine.ensureAudioContext();
-
     if (this.isPlaying) {
-      // Pause in place
+      // Pause immediately and synchronously
       this.pause();
-    } else {
-      // Resume from current step
-      this.resume();
+      return false;
     }
+
+    // If user armed freeform waiting for first hit and then hits Play, disarm waiting cleanly
+    if (this.isRecording && this.isWaitingForFirstHit) {
+      this.isRecording = false;
+      this.isWaitingForFirstHit = false;
+      if (this.onRecordStateChange) {
+        this.onRecordStateChange(false, this.recordMode, false);
+      }
+    }
+
+    await this.resume();
     return this.isPlaying;
   }
 
   /**
-   * Start / Resume playback from current step
+   * Start / Resume playback from current step.
+   * Synchronous state lock + timer deduplication prevents orphaned zombie intervals.
    */
   async resume() {
     if (this.isPlaying) return;
-    await this.audioEngine.ensureAudioContext();
 
+    // Lock state synchronously BEFORE any await so concurrent calls can never spawn two timers
     this.isPlaying = true;
     this.isPaused = false;
+
+    if (this._timerId) {
+      clearInterval(this._timerId);
+      this._timerId = null;
+    }
 
     const totalSteps = this.getPatternLength();
     if (this.currentStep < 0 || this.currentStep >= totalSteps) {
@@ -164,13 +178,18 @@ export class Sequencer {
     this._timerId = setInterval(() => this._schedulerTick(), this.lookaheadMs);
 
     if (this.onPlayChange) this.onPlayChange(true, false);
+
+    // Unlock Web Audio non-blockingly if needed
+    if (this.audioEngine && typeof this.audioEngine.ensureAudioContext === 'function') {
+      await this.audioEngine.ensureAudioContext();
+    }
   }
 
   /**
    * Pause playback keeping playhead at current step position
    */
   pause() {
-    if (!this.isPlaying) return;
+    if (!this.isPlaying && !this._timerId) return;
     this.isPlaying = false;
     this.isPaused = true;
 
@@ -234,6 +253,25 @@ export class Sequencer {
    * Lookahead loop: schedules audio events ahead in time
    */
   _schedulerTick() {
+    if (!this.isPlaying) {
+      if (this._timerId) {
+        clearInterval(this._timerId);
+        this._timerId = null;
+      }
+      return;
+    }
+
+    // Wait cleanly if browser AudioContext is still suspended
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.nextStepTime = this.ctx.currentTime + 0.03;
+      return;
+    }
+
+    // Prevent giant catch-up burst after returning from a backgrounded browser tab
+    if (this.ctx.currentTime - this.nextStepTime > 0.5) {
+      this.nextStepTime = this.ctx.currentTime + 0.03;
+    }
+
     while (this.nextStepTime < this.ctx.currentTime + this.scheduleAheadTimeSec) {
       // Calculate swing offset on odd 16th steps
       const isOddStep = (this.currentStep % 2 !== 0);

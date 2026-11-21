@@ -5,11 +5,12 @@
  */
 
 export class WaveformView {
-  constructor(canvasElement, onTrimChange = null, onSliceChange = null) {
+  constructor(canvasElement, onTrimChange = null, onSliceChange = null, onSliceSelect = null) {
     this.canvas = canvasElement;
     this.ctx = canvasElement.getContext('2d');
     this.onTrimChange = onTrimChange; // (start, end) => {}
     this.onSliceChange = onSliceChange; // (sliceIndex, start, end) => {}
+    this.onSliceSelect = onSliceSelect; // (sliceIndex) => {}
 
     this.activeSlot = null;
     this.draggingHandle = null; // 'start', 'end', or sliceIndex
@@ -34,12 +35,12 @@ export class WaveformView {
     const width = canvas.width;
     const height = canvas.height;
 
-    // Background: Dark matte retro LCD slate
-    ctx.fillStyle = '#1c1f24';
+    // Background: FL Studio Edison / Sampler dark slate well
+    ctx.fillStyle = '#1b2126';
     ctx.fillRect(0, 0, width, height);
 
     // Center grid line
-    ctx.strokeStyle = '#2d333b';
+    ctx.strokeStyle = '#2d363e';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, height / 2);
@@ -48,10 +49,10 @@ export class WaveformView {
 
     if (!this.activeSlot || !this.activeSlot.buffer) {
       // Empty slot placeholder
-      ctx.fillStyle = '#6e7681';
-      ctx.font = '12px "Courier New", monospace';
+      ctx.fillStyle = '#738290';
+      ctx.font = '11px "Segoe UI", -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('[ NO SAMPLE LOADED - DRAG AUDIO HERE OR LIVE SAMPLE ]', width / 2, height / 2 + 4);
+      ctx.fillText('NO SAMPLE LOADED — DROP AUDIO FILE OR CAPTURE VIA LINE / TAB AUDIO', width / 2, height / 2 + 4);
       return;
     }
 
@@ -60,9 +61,9 @@ export class WaveformView {
     const step = Math.ceil(data.length / width);
     const amp = height / 2;
 
-    // Draw waveform
-    ctx.strokeStyle = '#e67e22'; // Retro amber waveform
-    ctx.lineWidth = 1.5;
+    // Draw waveform in FL Studio warm amber-orange
+    ctx.strokeStyle = '#d88b42';
+    ctx.lineWidth = 1.35;
     ctx.beginPath();
 
     for (let x = 0; x < width; x++) {
@@ -199,7 +200,18 @@ export class WaveformView {
         if (closestIdx !== -1) {
           this.activeSlot.selectedSliceIndex = closestIdx;
           this.draggingHandle = `slice_${closestIdx}`;
+          if (this.onSliceSelect) this.onSliceSelect(closestIdx);
+        } else {
+          // Clicking anywhere inside a slice region selects & auditions that slice
+          const clickTime = xNorm * dur;
+          const hitIdx = this.activeSlot.slices.findIndex(s => clickTime >= s.start && clickTime <= s.end);
+          if (hitIdx !== -1) {
+            this.activeSlot.selectedSliceIndex = hitIdx;
+            if (this.onSliceSelect) this.onSliceSelect(hitIdx);
+          }
         }
+      } else if (this.activeSlot.type === 'melodic') {
+        if (this.onSliceSelect) this.onSliceSelect(60);
       }
       this.render();
     };

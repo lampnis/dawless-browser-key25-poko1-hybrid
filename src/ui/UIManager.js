@@ -11,6 +11,8 @@ import { KeyboardView } from './KeyboardView.js';
 import { MinimalPoView } from './MinimalPoView.js';
 import { GuidedTester } from './GuidedTester.js';
 import { MixerRackView } from './MixerRackView.js';
+import { ApcHardwareHelp } from './ApcHardwareHelp.js';
+import { GuidedWalkthrough } from './GuidedWalkthrough.js';
 import { SampleLibrary } from '../presets/SampleLibrary.js';
 import { AudioExporter } from '../audio/AudioExporter.js';
 import {
@@ -41,6 +43,8 @@ export class UIManager {
     this.minimalPoView = null;
     this.guidedTester = null;
     this.mixerRackView = null;
+    this.hardwareHelp = null;
+    this.walkthrough = null;
 
     this.currentViewMode = 'debug'; // 'minimal' or 'debug'
     this._lastPlayheadStep = -1;
@@ -57,8 +61,32 @@ export class UIManager {
     this._initTouchStepGrid();
     this._initZoomAndSampleControls();
     this._initApcHoverHints();
+    this._initHelpAndWalkthrough();
     this._startMeterLoop();
     this.refreshAll();
+  }
+
+  _initHelpAndWalkthrough() {
+    this.hardwareHelp = new ApcHardwareHelp();
+    this.hardwareHelp.init();
+
+    this.walkthrough = new GuidedWalkthrough(this);
+    const tourBtn = document.getElementById('btn-walkthrough');
+    if (tourBtn) {
+      tourBtn.addEventListener('click', () => {
+        tourBtn.blur();
+        this.walkthrough.open(0);
+      });
+    }
+
+    // Automatically launch friendly hand-holding tour on first visit only
+    if (this.walkthrough.shouldAutoStart()) {
+      setTimeout(() => {
+        if (!document.querySelector('.modal-overlay.open')) {
+          this.walkthrough.open(0);
+        }
+      }, 450);
+    }
   }
 
   _bindDomElements() {
@@ -87,7 +115,9 @@ export class UIManager {
     }
 
     // 2. Guided Hardware Test Suite & Calibration Inspector
-    this.guidedTester = new GuidedTester(this.midiManager, this.audioEngine);
+    this.guidedTester = new GuidedTester(this.midiManager, this.audioEngine, () => {
+      this.refreshAll();
+    });
     const testBtn = document.getElementById('btn-open-tester');
     if (testBtn) {
       testBtn.addEventListener('click', () => this.guidedTester.open('diagnostic'));
@@ -106,19 +136,16 @@ export class UIManager {
         this.midiManager.setLedPowerMode(nextMode);
 
         if (nextMode === 'eco') {
-          ledPowerBtn.textContent = '⚡ LED: ECO (SILENT)';
-          ledPowerBtn.style.borderColor = '#2ecc71';
-          ledPowerBtn.style.color = '#2ecc71';
+          ledPowerBtn.textContent = 'LED: ECO';
+          ledPowerBtn.classList.add('is-active');
           this._updateLcdStatus('LED POWER: ECO (REDUCED USB CURRENT // SILENT GROUND)');
         } else if (nextMode === 'stealth') {
-          ledPowerBtn.textContent = '⚡ LED: STEALTH (OFF)';
-          ledPowerBtn.style.borderColor = '#828997';
-          ledPowerBtn.style.color = '#828997';
+          ledPowerBtn.textContent = 'LED: OFF';
+          ledPowerBtn.classList.remove('is-active');
           this._updateLcdStatus('LED POWER: STEALTH (ALL HARDWARE LEDS DISABLED)');
         } else {
-          ledPowerBtn.textContent = '⚡ LED: NORMAL';
-          ledPowerBtn.style.borderColor = '#f39c12';
-          ledPowerBtn.style.color = '#ff9f43';
+          ledPowerBtn.textContent = 'LED: NORM';
+          ledPowerBtn.classList.remove('is-active');
           this._updateLcdStatus('LED POWER: NORMAL (ALL LEDS ACTIVE)');
         }
         this._syncPadGridLeds();
@@ -131,9 +158,6 @@ export class UIManager {
         if (this.midiManager.callbacks.onToggleKnobBank) {
           this.midiManager.callbacks.onToggleKnobBank();
         }
-        knobBankBtn.textContent = (this.knobBank === 'master') ? '🎛 MASTER KNOBS' : '🎛 TRACK KNOBS';
-        knobBankBtn.style.color = (this.knobBank === 'master') ? '#ff9f43' : '#61afef';
-        knobBankBtn.style.borderColor = (this.knobBank === 'master') ? '#ff9f43' : '#61afef';
       });
     }
 
@@ -142,7 +166,7 @@ export class UIManager {
       exportBtn.addEventListener('click', async () => {
         try {
           this._updateLcdStatus('RENDERING OFFLINE AUDIO (0% -> 100%)...');
-          exportBtn.textContent = '⏳ RENDERING...';
+          exportBtn.textContent = 'RENDERING...';
           exportBtn.disabled = true;
 
           const wavBlob = await AudioExporter.exportArrangement(
@@ -157,20 +181,20 @@ export class UIManager {
           const filename = `open_ko_arrangement_${dateStr}.wav`;
           AudioExporter.downloadBlob(wavBlob, filename);
 
-          exportBtn.textContent = '⬇ EXPORT WAV';
+          exportBtn.textContent = 'EXPORT WAV';
           exportBtn.disabled = false;
           this._updateLcdStatus(`EXPORT COMPLETE: ${filename} DOWNLOADED`);
           if (this.minimalPoView) this.minimalPoView.triggerPunch('EXPORT!');
         } catch (err) {
           console.error('Export failed:', err);
-          exportBtn.textContent = '⬇ EXPORT WAV';
+          exportBtn.textContent = 'EXPORT WAV';
           exportBtn.disabled = false;
           this._updateLcdStatus(`EXPORT ERROR: ${err.message}`);
         }
       });
     }
 
-    // 3. Waveform Canvas View
+    // 3. Waveform Canvas View (clicking a drum slice or melodic waveform auditions sound immediately)
     const canvas = document.getElementById('waveform-canvas');
     this.waveformView = new WaveformView(
       canvas,
@@ -184,18 +208,32 @@ export class UIManager {
       },
       (sliceIdx, start, end) => {
         this._updateLcdStatus(`SLICE ${sliceIdx + 1}: ${start.toFixed(2)}s`);
+      },
+      (noteOrSlice) => {
+        const slot = this.audioEngine.getActiveSlot();
+        if (!slot) return;
+        if (slot.type === 'drum') {
+          this.audioEngine.playActiveSlot(noteOrSlice, 110);
+          this._updateLcdStatus(`AUDITION SLICE ${noteOrSlice + 1}: ${slot.name.toUpperCase()}`);
+        } else {
+          this.audioEngine.playActiveSlot(60, 105);
+          this._updateLcdStatus(`AUDITION SAMPLE: ${slot.name.toUpperCase()}`);
+        }
+        if (this.mixerRackView) this.mixerRackView.flashTrackLed(this.audioEngine.activeSlotIndex);
       }
     );
 
-    // 4. Hardware 8x5 Pad Grid & Scene Buttons
+    // 4. Hardware 8x5 Pad Grid & Scene Buttons (synced 1-to-1 with active APC operational mode)
     const gridContainer = document.getElementById('apc-grid-container');
     this.hardwareGrid = new HardwareGrid(gridContainer, {
       onStepClick: (padIdx) => {
         const activeSlot = this.audioEngine.activeSlotIndex;
         const stepIdx = (this.activePage * 16) + padIdx;
+        this.selectedStepIndex = padIdx;
         const newState = this.sequencer.toggleStep(activeSlot, stepIdx);
         this._syncSequencerLeds();
         this._updateTouchStepGrid();
+        this._updateStepInspector(activeSlot, stepIdx);
         this._updateLcdStatus(`STEP ${stepIdx + 1} ${newState ? 'ON' : 'OFF'}`);
         if (this.minimalPoView) this.minimalPoView.triggerPunch(newState ? 'STEP ON' : 'STEP OFF');
       },
@@ -207,6 +245,38 @@ export class UIManager {
       },
       onSlotClick: (slotIdx, type) => {
         this.selectSlot(slotIdx);
+        this.auditionActiveSlot();
+      },
+      onPatternClick: (patIdx) => {
+        if (this.sequencer.isPlaying) {
+          this.sequencer.queuePattern(patIdx);
+          this._updateLcdStatus(`PATTERN ${patIdx + 1} QUEUED (NEXT BAR)`);
+        } else {
+          this.sequencer.setPattern(patIdx);
+          this._updateLcdStatus(`PATTERN ${patIdx + 1} SELECTED`);
+        }
+        this._renderSongChainBar();
+        this._syncPadGridLeds();
+        this._syncPoState();
+      },
+      onMuteClick: (trackIdx) => {
+        const isMuted = this.sequencer.toggleTrackMute(trackIdx);
+        const slot = this.audioEngine.slots[trackIdx];
+        this._updateLcdStatus(`${slot ? slot.name : `Track ${trackIdx + 1}`} ${isMuted ? 'MUTED' : 'UNMUTED'}`);
+        this._syncPadGridLeds();
+        if (this.mixerRackView) this.mixerRackView.updateMuteAndSoloStates();
+      },
+      onSliceClick: (sliceIdx) => {
+        this._onKeyboardHit(sliceIdx, 110);
+      },
+      onSampleToolClick: (toolIdx) => {
+        this._handleHardwareSampleTool(toolIdx);
+      },
+      onClipLaunch: (sceneIdx, trackIdx) => {
+        this.sequencer.setPattern(sceneIdx);
+        this._updateLcdStatus(`LAUNCHED SCENE ${sceneIdx + 1} // TRACK ${trackIdx + 1}`);
+        this._syncPadGridLeds();
+        this._syncPoState();
       },
       onFxTrigger: (fxIdx, active) => {
         this.audioEngine.punchInFx.trigger(fxIdx, active);
@@ -288,6 +358,12 @@ export class UIManager {
       this._toggleLiveSampling('mic');
     };
 
+    // Wire physical Scene 3 (Auto-Slice) and Scene 4 (Metronome) from APC Key 25
+    this.midiManager.callbacks.onSceneButton = (sceneIdx, isPressed) => {
+      if (!isPressed) return;
+      this._handleSceneAction(sceneIdx);
+    };
+
     this.midiManager.callbacks.onModeChange = (newMode) => {
       this.setMode(newMode);
     };
@@ -317,9 +393,11 @@ export class UIManager {
 
     this.midiManager.callbacks.onSoundModeHold = (isHeld) => {
       if (isHeld) {
+        this._patternBeforeSoundHold = this.sequencer.activePatternIndex;
         this._updateLcdStatus('SOUND HOLD (►) // ROW 1: MELODIC (1-8) | ROW 2: DRUM (9-16)');
         this._syncSoundSelectGridLeds();
       } else {
+        this._patternBeforeSoundHold = undefined;
         this._syncPadGridLeds();
         this._syncPoState();
       }
@@ -330,6 +408,7 @@ export class UIManager {
       const slot = this.audioEngine.slots[trackIdx];
       this._updateLcdStatus(`${slot ? slot.name : `Track ${trackIdx + 1}`} ${isMuted ? 'MUTED' : 'UNMUTED'}`);
       this._syncPadGridLeds();
+      if (this.mixerRackView) this.mixerRackView.updateMuteAndSoloStates();
     };
 
     this.midiManager.callbacks.onClipLaunch = (sceneIdx, trackIdx) => {
@@ -383,31 +462,7 @@ export class UIManager {
     };
 
     this.midiManager.callbacks.onSampleCycle = (direction) => {
-      const activeSlot = this.audioEngine.getActiveSlot();
-      const res = SampleLibrary.cyclePreset(
-        this.audioEngine.ctx,
-        activeSlot.name,
-        activeSlot.type,
-        direction
-      );
-
-      activeSlot.loadBuffer(res.buffer);
-      activeSlot.name = res.name;
-      if (activeSlot.type === 'drum') {
-        activeSlot.autoSlice();
-      }
-
-      this.refreshSlotDisplay();
-      this.waveformView.render();
-      this._updateLcdStatus(`SAMPLE: [${res.name.toUpperCase()}] (${res.category})`);
-      if (this.minimalPoView) this.minimalPoView.triggerPunch('SAMP!');
-
-      // Audition preview
-      if (activeSlot.type === 'melodic') {
-        this.audioEngine.playActiveSlot(60, 105);
-      } else {
-        this.audioEngine.playActiveSlot(0, 105);
-      }
+      this.cycleActivePreset(direction);
     };
 
     this.midiManager.callbacks.onToggleKnobBank = () => {
@@ -415,15 +470,14 @@ export class UIManager {
       const slot = this.audioEngine.getActiveSlot();
       const knobBankBtn = document.getElementById('btn-knob-bank');
       if (knobBankBtn) {
-        knobBankBtn.textContent = (this.knobBank === 'master') ? '🎛 MASTER KNOBS' : '🎛 TRACK KNOBS';
-        knobBankBtn.style.color = (this.knobBank === 'master') ? '#ff9f43' : '#61afef';
-        knobBankBtn.style.borderColor = (this.knobBank === 'master') ? '#ff9f43' : '#61afef';
+        knobBankBtn.textContent = (this.knobBank === 'master') ? 'KNOBS: MASTER' : 'KNOBS: TRACK';
+        knobBankBtn.classList.toggle('is-master', this.knobBank === 'master');
       }
       this._updateKnobLabels();
       if (this.knobBank === 'master') {
-        this._updateLcdStatus('🎛 KNOBS: MASTER MIXER (BPM, SWING, DELAY, COMP)');
+        this._updateLcdStatus('KNOBS: MASTER MIXER (BPM, SWING, FILTER, SIDECHAIN)');
       } else {
-        this._updateLcdStatus(`🎛 KNOBS: TRACK ${this.audioEngine.activeSlotIndex + 1} [${slot.name.toUpperCase()}]`);
+        this._updateLcdStatus(`KNOBS: TRACK ${this.audioEngine.activeSlotIndex + 1} [${slot.name.toUpperCase()}]`);
       }
       this._syncPoState();
     };
@@ -554,7 +608,14 @@ export class UIManager {
     };
 
     this.midiManager.callbacks.onSlotSelect = (slotIdx, type) => {
+      // If user held ► (SOUND) + tapped a pad, restore pattern so ► never leaves them on the wrong pattern
+      if (this.midiManager.soundButtonHeld && this._patternBeforeSoundHold !== undefined) {
+        if (this.sequencer.activePatternIndex !== this._patternBeforeSoundHold) {
+          this.sequencer.setPattern(this._patternBeforeSoundHold);
+        }
+      }
       this.selectSlot(slotIdx);
+      this.auditionActiveSlot();
     };
 
     this.midiManager.callbacks.onFxTrigger = (fxIdx, active, velocity) => {
@@ -1049,30 +1110,60 @@ export class UIManager {
     const playBtn = document.getElementById('btn-transport-play');
     const stopBtn = document.getElementById('btn-transport-stop');
     const recBtn = document.getElementById('btn-transport-rec');
+    const audioUnlockBtn = document.getElementById('btn-audio-unlock');
 
     if (playBtn) {
       playBtn.addEventListener('click', () => {
+        playBtn.blur(); // Prevent Spacebar from double-firing focused button
         this.sequencer.togglePlayPause();
       });
     }
 
     if (recBtn) {
       recBtn.addEventListener('click', () => {
+        recBtn.blur();
         this.sequencer.toggleRecord();
       });
     }
 
     if (stopBtn) {
       stopBtn.addEventListener('click', () => {
+        stopBtn.blur();
         this.sequencer.stopAndReset();
         this._updateLcdStatus('STOPPED // RESET TO START');
       });
     }
 
+    if (audioUnlockBtn) {
+      audioUnlockBtn.addEventListener('click', async () => {
+        audioUnlockBtn.blur();
+        await this.audioEngine.ensureAudioContext();
+        this.updateAudioStateIndicator();
+      });
+    }
+
     if (this.viewToggleBtn) {
       this.viewToggleBtn.addEventListener('click', () => {
+        this.viewToggleBtn.blur();
         this.toggleViewMode();
       });
+    }
+
+    this.updateAudioStateIndicator();
+  }
+
+  updateAudioStateIndicator() {
+    const audioBtn = document.getElementById('btn-audio-unlock');
+    if (!audioBtn || !this.audioEngine || !this.audioEngine.ctx) return;
+    const isRunning = this.audioEngine.ctx.state === 'running';
+    if (isRunning) {
+      audioBtn.textContent = 'AUDIO: ON';
+      audioBtn.classList.remove('audio-locked');
+      audioBtn.classList.add('audio-ready');
+    } else {
+      audioBtn.textContent = 'ENABLE AUDIO';
+      audioBtn.classList.add('audio-locked');
+      audioBtn.classList.remove('audio-ready');
     }
   }
 
@@ -1080,6 +1171,7 @@ export class UIManager {
     const modeBtns = document.querySelectorAll('.mode-btn');
     modeBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
+        btn.blur();
         const mode = btn.dataset.mode;
         this.setMode(mode);
       });
@@ -1093,6 +1185,10 @@ export class UIManager {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
 
+    if (this.hardwareGrid) {
+      this.hardwareGrid.setOperationalMode(mode);
+    }
+
     this._updateLcdStatus(`MODE: ${mode.toUpperCase()} ACTIVE`);
     this._syncPadGridLeds();
     this._syncPoState();
@@ -1103,8 +1199,8 @@ export class UIManager {
     document.body.className = `view-${this.currentViewMode}`;
     if (this.viewToggleBtn) {
       this.viewToggleBtn.textContent = (this.currentViewMode === 'minimal')
-        ? '🎛 MONITOR / DEBUG VIEW'
-        : '📱 MINIMAL PO-33 VIEW';
+        ? 'STUDIO VIEW'
+        : 'PO-33 VIEW';
     }
     this._updateLcdStatus(`SWITCHED TO ${this.currentViewMode.toUpperCase()} VIEW`);
   }
@@ -1202,10 +1298,8 @@ export class UIManager {
         pBtn.style.display = (p <= zoom) ? 'inline-block' : 'none';
         const isCurrentPage = (p - 1) === this.activePage;
         pBtn.classList.toggle('active', isCurrentPage);
-        pBtn.style.color = isCurrentPage ? '#61afef' : '#828997';
-        pBtn.style.borderColor = isCurrentPage ? '#61afef' : '#3e4451';
-        pBtn.title = `APC: Tap ▲ / ▼ to scroll to Page ${p}`;
-        pBtn.dataset.apcHint = `APC: Tap ▲ / ▼ to scroll pages`;
+        pBtn.title = `APC: Tap ▲ / ▼ or Shift + Knob 2 (CC 49) to scroll to Page ${p}`;
+        pBtn.dataset.apcHint = `APC: Tap ▲ / ▼ or Shift + Knob 2 -> Scroll to Page ${p}`;
       }
     }
 
@@ -1215,10 +1309,8 @@ export class UIManager {
       const bZoom = parseInt(btn.dataset.zoom, 10);
       const isCurrentZoom = (bZoom === zoom);
       btn.classList.toggle('active', isCurrentZoom);
-      btn.style.color = isCurrentZoom ? '#98c379' : '#828997';
-      btn.style.borderColor = isCurrentZoom ? '#98c379' : '#3e4451';
-      btn.title = `APC: Zoom ${bZoom}X (${bZoom === 1 ? 'Shift + ◄' : bZoom === 2 ? 'Shift + ►' : `${bZoom}X resolution`})`;
-      btn.dataset.apcHint = `APC: Zoom ${bZoom}X (${bZoom === 1 ? 'Shift + ◄' : bZoom === 2 ? 'Shift + ►' : `${bZoom}X`})`;
+      btn.title = `APC: Shift + Knob 1 (CC 48) or Shift + Pad 10 (Note 25) -> ${bZoom}X (${16 * bZoom} steps)`;
+      btn.dataset.apcHint = `APC: Shift + Knob 1 or Shift + Pad 10 -> ${bZoom}X Zoom (${16 * bZoom} steps)`;
     });
 
     const inspectIdx = (this.heldStepIndex >= 0) ? this.heldStepIndex : (pageOffset + (this.selectedStepIndex || 0));
@@ -1357,7 +1449,7 @@ export class UIManager {
       followBtn.addEventListener('click', () => {
         this.followPlayhead = !this.followPlayhead;
         followBtn.textContent = `FOLLOW: ${this.followPlayhead ? 'ON' : 'OFF'}`;
-        followBtn.style.color = this.followPlayhead ? '#98c379' : '#828997';
+        followBtn.classList.toggle('is-active', this.followPlayhead);
         this._updateLcdStatus(`PLAYHEAD FOLLOW: ${this.followPlayhead ? 'ON' : 'OFF'}`);
       });
     }
@@ -1394,8 +1486,8 @@ export class UIManager {
         const slot = this.audioEngine.getActiveSlot();
         if (slot) {
           slot.loop = !slot.loop;
-          loopBtn.textContent = `🔁 LOOP: ${slot.loop ? 'ON' : 'OFF'}`;
-          loopBtn.style.color = slot.loop ? '#98c379' : '#828997';
+          loopBtn.textContent = `LOOP: ${slot.loop ? 'ON' : 'OFF'}`;
+          loopBtn.classList.toggle('is-active', !!slot.loop);
           this._updateLcdStatus(`SAMPLE LOOP: ${slot.loop ? 'ON (HOLD KEYS TO LOOP)' : 'OFF'}`);
           this._syncPoState();
         }
@@ -1477,21 +1569,164 @@ export class UIManager {
         this._triggerAutoSlice();
       });
     }
+
+    // Channel Rack Sample & Preset Browser Controls (Switch Track, Pick Any of 60 Presets, Audition)
+    const slotPrevBtn = document.getElementById('btn-slot-prev');
+    if (slotPrevBtn) {
+      slotPrevBtn.addEventListener('click', () => {
+        const prev = (this.audioEngine.activeSlotIndex - 1 + 16) % 16;
+        this.selectSlot(prev);
+        this.auditionActiveSlot();
+      });
+    }
+
+    const slotNextBtn = document.getElementById('btn-slot-next');
+    if (slotNextBtn) {
+      slotNextBtn.addEventListener('click', () => {
+        const next = (this.audioEngine.activeSlotIndex + 1) % 16;
+        this.selectSlot(next);
+        this.auditionActiveSlot();
+      });
+    }
+
+    const presetPrevBtn = document.getElementById('btn-preset-prev');
+    if (presetPrevBtn) {
+      presetPrevBtn.addEventListener('click', () => {
+        this.cycleActivePreset(-1);
+      });
+    }
+
+    const presetNextBtn = document.getElementById('btn-preset-next');
+    if (presetNextBtn) {
+      presetNextBtn.addEventListener('click', () => {
+        this.cycleActivePreset(1);
+      });
+    }
+
+    const presetSelect = document.getElementById('select-slot-preset');
+    if (presetSelect) {
+      presetSelect.addEventListener('change', (e) => {
+        presetSelect.blur();
+        this.loadPresetByName(e.target.value);
+      });
+    }
+
+    const auditionBtn = document.getElementById('btn-audition-sample');
+    if (auditionBtn) {
+      auditionBtn.addEventListener('click', () => {
+        auditionBtn.blur();
+        this.auditionActiveSlot();
+      });
+    }
+  }
+
+  cycleActivePreset(direction = 1) {
+    const activeSlot = this.audioEngine.getActiveSlot();
+    if (!activeSlot) return;
+    const res = SampleLibrary.cyclePreset(
+      this.audioEngine.ctx,
+      activeSlot.name,
+      activeSlot.type,
+      direction
+    );
+    this._applyPresetToActiveSlot(res);
+  }
+
+  loadPresetByName(presetName) {
+    const activeSlot = this.audioEngine.getActiveSlot();
+    if (!activeSlot || !presetName) return;
+    const list = activeSlot.type === 'melodic'
+      ? SampleLibrary.getMelodicPresets()
+      : SampleLibrary.getDrumPresets();
+    const preset = list.find(p => p.name === presetName);
+    if (!preset) return;
+    const buffer = preset.generate(this.audioEngine.ctx);
+    this._applyPresetToActiveSlot({ name: preset.name, category: preset.category, buffer });
+  }
+
+  _applyPresetToActiveSlot(res) {
+    const activeSlot = this.audioEngine.getActiveSlot();
+    if (!activeSlot || !res) return;
+    activeSlot.loadBuffer(res.buffer);
+    activeSlot.name = res.name;
+    if (activeSlot.type === 'drum') {
+      activeSlot.autoSlice();
+    }
+    this.refreshSlotDisplay();
+    if (this.mixerRackView) {
+      this.mixerRackView.updateSlotName(this.audioEngine.activeSlotIndex, res.name);
+    }
+    this.waveformView.render();
+    this._updateLcdStatus(`SAMPLE: [${res.name.toUpperCase()}] (${res.category || activeSlot.type.toUpperCase()})`);
+    if (this.minimalPoView) this.minimalPoView.triggerPunch('SAMP!');
+    this.auditionActiveSlot();
+  }
+
+  auditionActiveSlot() {
+    const slot = this.audioEngine.getActiveSlot();
+    if (!slot) return;
+    this.audioEngine.ensureAudioContext();
+    this.updateAudioStateIndicator();
+    if (slot.type === 'melodic') {
+      this.audioEngine.playActiveSlot(60, 108);
+    } else {
+      this.audioEngine.playActiveSlot(slot.selectedSliceIndex || 0, 112);
+    }
+    if (this.mixerRackView) {
+      this.mixerRackView.flashTrackLed(this.audioEngine.activeSlotIndex);
+    }
+  }
+
+  _syncPresetDropdown() {
+    const presetSelect = document.getElementById('select-slot-preset');
+    const slot = this.audioEngine.getActiveSlot();
+    if (!presetSelect || !slot) return;
+
+    const list = slot.type === 'melodic'
+      ? SampleLibrary.getMelodicPresets()
+      : SampleLibrary.getDrumPresets();
+
+    if (presetSelect.dataset.slotType !== slot.type) {
+      presetSelect.innerHTML = '';
+      list.forEach((p, idx) => {
+        const opt = document.createElement('option');
+        opt.value = p.name;
+        opt.textContent = `${String(idx + 1).padStart(2, '0')}. ${p.name} (${p.category})`;
+        presetSelect.appendChild(opt);
+      });
+      presetSelect.dataset.slotType = slot.type;
+    }
+
+    const matched = list.some(p => p.name === slot.name);
+    if (matched) {
+      presetSelect.value = slot.name;
+    } else {
+      // Handle user-recorded or dropped custom samples
+      let customOpt = presetSelect.querySelector('option[data-custom="true"]');
+      if (!customOpt) {
+        customOpt = document.createElement('option');
+        customOpt.dataset.custom = 'true';
+        presetSelect.prepend(customOpt);
+      }
+      customOpt.value = slot.name;
+      customOpt.textContent = `[CUSTOM] ${slot.name}`;
+      presetSelect.value = slot.name;
+    }
   }
 
   _updatePlayButtonState(isPlaying, isPaused) {
     const playBtn = document.getElementById('btn-transport-play');
     if (!playBtn) return;
 
+    playBtn.classList.toggle('is-playing', !!isPlaying);
+    playBtn.classList.toggle('is-paused', !isPlaying && !!isPaused);
+
     if (isPlaying) {
       playBtn.textContent = '❚❚ PAUSE';
-      playBtn.style.background = '#e67e22';
     } else if (isPaused) {
       playBtn.textContent = '▶ RESUME';
-      playBtn.style.background = '#27ae60';
     } else {
       playBtn.textContent = '▶ PLAY';
-      playBtn.style.background = '#27ae60';
     }
   }
 
@@ -1499,9 +1734,8 @@ export class UIManager {
     const recModeBtn = document.getElementById('btn-rec-mode');
     if (!recModeBtn) return;
     const isFree = (this.sequencer.recordMode === 'freeform');
-    recModeBtn.textContent = isFree ? 'REC: FREEFORM (128th)' : 'REC: QUANTIZED';
-    recModeBtn.style.color = isFree ? '#ff7828' : '#18dcff';
-    recModeBtn.style.borderColor = isFree ? '#ff7828' : '#18dcff';
+    recModeBtn.textContent = isFree ? 'FREEFORM 128th' : 'QUANTIZED';
+    recModeBtn.classList.toggle('is-freeform', isFree);
   }
 
   _updateSidechainToggleState() {
@@ -1509,28 +1743,20 @@ export class UIManager {
     if (!scToggle) return;
     const enabled = this.audioEngine.sidechainEnabled !== false;
     scToggle.textContent = enabled ? 'ON' : 'OFF';
-    scToggle.style.color = enabled ? '#26de81' : '#828997';
-    scToggle.style.borderColor = enabled ? '#26de81' : '#3e4451';
+    scToggle.classList.toggle('is-active', enabled);
   }
 
   _updateRecButtonState(isRecording) {
     const recBtn = document.getElementById('btn-transport-rec');
     if (!recBtn) return;
+    recBtn.classList.toggle('is-armed', !!this.sequencer.isWaitingForFirstHit);
+    recBtn.classList.toggle('active', !!isRecording);
     if (this.sequencer.isWaitingForFirstHit) {
-      recBtn.textContent = '● ARMED (HIT)';
-      recBtn.style.background = '#d35400';
-      recBtn.style.borderColor = '#e67e22';
-      recBtn.classList.add('active');
+      recBtn.textContent = '● ARMED';
     } else if (isRecording) {
-      recBtn.textContent = '● RECORDING...';
-      recBtn.style.background = '#e74c3c';
-      recBtn.style.borderColor = '#c0392b';
-      recBtn.classList.add('active');
+      recBtn.textContent = '● REC ON';
     } else {
       recBtn.textContent = '● REC';
-      recBtn.style.background = '';
-      recBtn.style.borderColor = '';
-      recBtn.classList.remove('active');
     }
   }
 
@@ -1657,30 +1883,14 @@ export class UIManager {
     const micBtn = document.getElementById('btn-live-sample');
     const tabBtn = document.getElementById('btn-tab-sample');
     if (micBtn) {
-      if (isSampling && sourceType !== 'tab') {
-        micBtn.textContent = '⏹ STOP REC';
-        micBtn.classList.add('recording');
-        micBtn.style.background = '#e74c3c';
-        micBtn.style.borderColor = '#c0392b';
-      } else {
-        micBtn.textContent = '🎙 LINE/MIC';
-        micBtn.classList.remove('recording');
-        micBtn.style.background = '#2d3436';
-        micBtn.style.borderColor = '#e17055';
-      }
+      const activeMic = isSampling && sourceType !== 'tab';
+      micBtn.textContent = activeMic ? '■ STOP MIC' : 'LINE / MIC';
+      micBtn.classList.toggle('recording', activeMic);
     }
     if (tabBtn) {
-      if (isSampling && sourceType === 'tab') {
-        tabBtn.textContent = '⏹ STOP TAB';
-        tabBtn.classList.add('recording');
-        tabBtn.style.background = '#e74c3c';
-        tabBtn.style.borderColor = '#c0392b';
-      } else {
-        tabBtn.textContent = '🖥️ TAB AUDIO';
-        tabBtn.classList.remove('recording');
-        tabBtn.style.background = '#2d3436';
-        tabBtn.style.borderColor = '#0984e3';
-      }
+      const activeTab = isSampling && sourceType === 'tab';
+      tabBtn.textContent = activeTab ? '■ STOP TAB' : 'TAB AUDIO';
+      tabBtn.classList.toggle('recording', activeTab);
     }
   }
 
@@ -1740,8 +1950,15 @@ export class UIManager {
 
     const loopBtn = document.getElementById('btn-sample-loop');
     if (loopBtn) {
-      loopBtn.textContent = `🔁 LOOP: ${slot.loop ? 'ON' : 'OFF'}`;
-      loopBtn.style.color = slot.loop ? '#98c379' : '#828997';
+      loopBtn.textContent = `LOOP: ${slot.loop ? 'ON' : 'OFF'}`;
+      loopBtn.classList.toggle('is-active', !!slot.loop);
+    }
+    this.knobValues[7] = Math.round((slot.volume !== undefined ? slot.volume : 0.85) * 127);
+    this._renderKnob(7);
+    this._syncPresetDropdown();
+    if (this.mixerRackView) {
+      this.mixerRackView.updateSlotName(slot.index, slot.name);
+      this.mixerRackView.updateSlotVolume(slot.index, slot.volume !== undefined ? slot.volume : 0.85);
     }
     this._updateStretchModeDisplay();
     this._syncPoState();
@@ -1752,15 +1969,14 @@ export class UIManager {
     const btn = document.getElementById('btn-stretch-mode');
     if (btn && slot) {
       const isPitchOnly = (slot.stretchMode === 'pitch_only');
-      btn.textContent = isPitchOnly ? '⏱ MODE: PITCH ONLY' : '⏱ MODE: SQUEEZE';
-      btn.style.color = isPitchOnly ? '#ff9f43' : '#61afef';
-      btn.style.borderColor = isPitchOnly ? '#ff9f43' : '#61afef';
+      btn.textContent = isPitchOnly ? 'STRETCH: PITCH ONLY' : 'STRETCH: SQUEEZE';
+      btn.classList.toggle('is-active', isPitchOnly);
       btn.title = isPitchOnly
-        ? 'APC: Shift + Knob 6 or Pad Note 62 toggles Stretch Mode. (Current: PITCH ONLY - Constant Time/Duration)'
-        : 'APC: Shift + Knob 6 or Pad Note 62 toggles Stretch Mode. (Current: SQUEEZE - Classic Varispeed)';
+        ? 'APC: Shift + Knob 6 or Sample Mode Pad 39 toggles Stretch Mode. (Current: PITCH ONLY - Constant Duration)'
+        : 'APC: Shift + Knob 6 or Sample Mode Pad 39 toggles Stretch Mode. (Current: SQUEEZE - Classic Varispeed)';
       btn.dataset.apcHint = isPitchOnly
-        ? 'APC: Shift + Knob 6 or Pad Note 62 -> Toggle Stretch Mode (Currently PITCH ONLY)'
-        : 'APC: Shift + Knob 6 or Pad Note 62 -> Toggle Stretch Mode (Currently SQUEEZE)';
+        ? 'APC: Shift + Knob 6 -> Toggle Stretch Mode (Currently PITCH ONLY)'
+        : 'APC: Shift + Knob 6 -> Toggle Stretch Mode (Currently SQUEEZE)';
     }
   }
 
@@ -1991,9 +2207,14 @@ export class UIManager {
         this._updateLcdStatus(`DELAY SEND: ${Math.round((value / 127) * 100)}%`);
         break;
       case 7:
-        this.audioEngine.setMasterCompVol(value);
-        this._lastParamMsg = `DRIVE ${Math.round((value / 127) * 100)}%`;
-        this._updateLcdStatus(`MASTER DRIVE: ${Math.round((value / 127) * 100)}%`);
+        if (slot) {
+          slot.volume = value / 127;
+          if (this.mixerRackView) {
+            this.mixerRackView.updateSlotVolume(activeSlotIdx, slot.volume);
+          }
+          this._lastParamMsg = `VOL ${Math.round(slot.volume * 100)}%`;
+          this._updateLcdStatus(`TRACK ${activeSlotIdx + 1} LEVEL: ${Math.round(slot.volume * 100)}%`);
+        }
         break;
     }
     if (this.mixerRackView) {
@@ -2304,9 +2525,9 @@ export class UIManager {
     if (this.lcdStatusMsg) {
       this.lcdStatusMsg.textContent = msg.toUpperCase();
       if (isHint) {
-        this.lcdStatusMsg.style.color = '#ff9f43';
+        this.lcdStatusMsg.style.color = '#e88c38';
       } else {
-        this.lcdStatusMsg.style.color = '#61afef';
+        this.lcdStatusMsg.style.color = '#c2ced8';
       }
     }
   }
@@ -2316,28 +2537,25 @@ export class UIManager {
 
     document.addEventListener('mouseover', (e) => {
       if (!e.target || typeof e.target.closest !== 'function') return;
-      const target = e.target.closest('[data-apc-hint], [title]');
+      const target = e.target.closest('[data-apc-hint], [data-native-title], [title]');
       if (!target || target === lastHoveredEl) return;
       lastHoveredEl = target;
 
-      const rawHint = target.dataset.apcHint || target.title;
+      const rawHint = target.dataset.apcHint || target.dataset.nativeTitle || target.title;
       if (rawHint) {
         const displayMsg = rawHint.startsWith('APC:') ? rawHint : `APC: ${rawHint}`;
         this._updateLcdStatus(displayMsg, true);
-        if (!target.title) {
-          target.title = displayMsg;
-        }
       }
     });
 
     document.addEventListener('mouseout', (e) => {
       if (!e.target || typeof e.target.closest !== 'function') return;
-      const target = e.target.closest('[data-apc-hint], [title]');
+      const target = e.target.closest('[data-apc-hint], [data-native-title], [title]');
       if (!target) return;
       if (e.relatedTarget && target.contains(e.relatedTarget)) return;
       if (target === lastHoveredEl) {
         lastHoveredEl = null;
-        this._updateLcdStatus(this._lastStatusMsg || 'READY // APC KEY 25 READY', false);
+        this._updateLcdStatus(this._lastStatusMsg || 'READY // HOVER ANY CONTROL TO SEE ITS APC KEY 25 MAPPING', false);
       }
     });
   }

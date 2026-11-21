@@ -66,10 +66,10 @@ Momentary velocity-responsive master bus performance effects engineered with cli
   - **`PITCH ONLY` (Default):** Granular overlap-add constant-duration engine — playing higher octaves raises pitch **without** shortening sample length!
   - **`SQUEEZE`:** Classic vintage sampler varispeed resampling ($R = 2^{\Delta/12}$).
 
-### 6. FL Studio 21-Inspired Dark UI with APC Key 25 Hardware Tooltips
-- **Channel Rack Two-Tone Step Chicklets:** Alternating 4-step slate/plum beat groups with emerald active indicators, cyan P-Lock dots, and top-right `±128th` micro-timing badges.
-- **Playlist Pattern Clips & 16-Track Insert Mixer:** Visual song chain blocks, per-track VU/voice LEDs, `[M]` Mute, `[S]` Solo, `[D]` Sidechain Duck / `[SC]` Trigger badges, and live Sidechain Ducking + Master Glue GR meters.
-- **Instant Hardware Hover Tooltips:** Hovering over *any* UI control immediately displays its exact physical **Akai APC Key 25 Mk1** shortcut on the amber LCD bar (`[APC] ...`) and in native tooltips.
+### 6. Authentic FL Studio 21 Matte Slate UI, Live APC Key 25 SVG Tooltips & First-Run Guided Tour
+- **Matte FL Studio 21 Aesthetic:** Clean cool steel-slate docked windows (`#313940` / `#283036`), recessed amber BPM well, alternating 4-step cool-grey & dusty-plum Channel Rack buttons that light warm cream when active, integrated **60-preset Channel Sample Picker & Audition bar**, and **16 vertical FL Insert Mixer faders**.
+- **On-the-Fly Floating APC Key 25 Visual Tooltips & Ableton-Style Info Box (`INFO BOX` / `?`):** Hovering over *any* button, knob, pad, fader, or step displays an instant floating schematic **SVG diagram of the Akai APC Key 25 Mk1** lighting up the exact physical button(s), knob(s), pad(s), Shift modifier, or keybed zone! Pin the Ableton Live-style docked **INFO BOX** in the bottom-left corner anytime (`?`).
+- **10-Step First-Run Hand-Holding Walkthrough (`TOUR`):** Launches automatically for new users (persisted via `localStorage` and relaunchable anytime via `TOUR`), spotlighting each panel with live "Try It" actions and matching APC Key 25 SVG hardware diagrams.
 - **Ultra-Minimalist PO-33 Retro LCD Mode (`Shift + Sustain`):** Collapses into a pocket-operator segment display with animated punching K.O! Boxer.
 
 ---
@@ -140,7 +140,7 @@ Open **`http://localhost:3000/`** (or the Vite dev URL) in **Google Chrome, Brav
 
 ## Testing, Building & Documentation
 
-- **Run Automated Node.js Unit Test Suite (73 Tests across 12 Suites):**
+- **Run Automated Node.js Unit Test Suite (79 Tests across 12 Suites):**
   ```bash
   node tests/run-tests.js
   ```

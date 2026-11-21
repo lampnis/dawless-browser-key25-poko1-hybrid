@@ -13,11 +13,13 @@ import {
 } from '../midi/ApcConstants.js';
 
 export class GuidedTester {
-  constructor(midiManager, audioEngine) {
+  constructor(midiManager, audioEngine, onClose = null) {
     this.midiManager = midiManager;
     this.audioEngine = audioEngine;
+    this.onClose = onClose;
     this.modal = null;
     this.activeTab = 'diagnostic'; // 'diagnostic', 'wizard', 'layout'
+    this.defaultBaseNote = 48; // C3 on APC Key 25 Mk1
 
     // Verified hardware tracking
     this.testedPads = new Set();
@@ -41,6 +43,10 @@ export class GuidedTester {
     this.noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   }
 
+  _getEl(id) {
+    return (typeof document !== 'undefined') ? document.getElementById(id) : null;
+  }
+
   open(initialTab = 'diagnostic') {
     if (!this.modal) {
       this._buildModal();
@@ -59,6 +65,9 @@ export class GuidedTester {
     this.midiManager.testModeActive = false;
     this.midiManager.callbacks.onTestMidiEvent = null;
     this.midiManager.clearAllLeds();
+    if (typeof this.onClose === 'function') {
+      this.onClose();
+    }
   }
 
   _switchTab(tabId) {
@@ -89,19 +98,19 @@ export class GuidedTester {
     this.modal.innerHTML = `
       <div class="modal-content" style="max-width: 920px; max-height: 94vh; display: flex; flex-direction: column;">
         <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3e4451; padding-bottom: 8px; margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #161b20; padding-bottom: 8px; margin-bottom: 8px;">
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="font-size: 15px; font-weight: 900; color: #ff5722; letter-spacing: 1px;">APC KEY 25 MK1 // HARDWARE TEST &amp; CALIBRATION</div>
-            <span style="font-size: 9px; background: #282c34; padding: 2px 6px; border-radius: 4px; color: #00cec9;">FOOLPROOF INSPECTOR</span>
+            <div style="font-size: 13px; font-weight: 800; color: #ff9800; letter-spacing: 0.6px;">APC KEY 25 MK1 — HARDWARE TEST &amp; CALIBRATION</div>
+            <span style="font-size: 9px; background: #21272c; border: 1px solid #3f4a53; padding: 2px 6px; border-radius: 2px; color: #8ab4cc; font-weight: 700;">MIDI INSPECTOR</span>
           </div>
           <button id="btn-close-tester" class="btn-tactile">CLOSE [ESC]</button>
         </div>
 
         <!-- Navigation Tabs -->
-        <div class="tester-tabs-bar" style="display: flex; gap: 8px; margin-bottom: 10px; border-bottom: 1px solid #282c34; padding-bottom: 6px;">
-          <button class="tester-tab-btn active" data-tab="diagnostic">🔍 LIVE DIAGNOSTIC SURFACE</button>
-          <button class="tester-tab-btn" data-tab="wizard">🧙 GUIDED TEST WIZARD</button>
-          <button class="tester-tab-btn" data-tab="layout">🎛 APC KEY 25 MK1 LAYOUT &amp; MIDI MAP</button>
+        <div class="tester-tabs-bar" style="display: flex; gap: 6px; margin-bottom: 10px; border-bottom: 1px solid #1e2429; padding-bottom: 6px;">
+          <button class="tester-tab-btn active" data-tab="diagnostic">LIVE DIAGNOSTIC SURFACE</button>
+          <button class="tester-tab-btn" data-tab="wizard">GUIDED TEST WIZARD</button>
+          <button class="tester-tab-btn" data-tab="layout">APC KEY 25 MK1 LAYOUT &amp; MIDI MAP</button>
         </div>
 
         <!-- Tab 1: Live Diagnostic Surface -->
@@ -146,7 +155,7 @@ export class GuidedTester {
                   <button id="btn-flash-all-red" class="btn-tactile" style="background: #4a1f1f; border-color: #e74c3c; font-size: 9px; padding: 4px;">ALL RED</button>
                   <button id="btn-led-chase" class="btn-tactile" style="background: #252a38; border-color: #61afef; font-size: 9px; padding: 4px;">CHASE CYCLE</button>
                 </div>
-                <button id="btn-save-calib" class="btn-tactile btn-play" style="margin-top: 4px; font-size: 10px; padding: 6px;">💾 SAVE CONFIRMED CALIBRATION</button>
+                <button id="btn-save-calib" class="btn-tactile btn-play" style="margin-top: 4px; font-size: 10px; padding: 6px;">SAVE CONFIRMED CALIBRATION</button>
               </div>
             </div>
           </div>
@@ -202,7 +211,7 @@ export class GuidedTester {
   }
 
   _renderDiagram() {
-    const container = document.getElementById('tester-diagram');
+    const container = this._getEl('tester-diagram');
     if (!container) return;
 
     container.innerHTML = `
@@ -288,8 +297,8 @@ export class GuidedTester {
           </div>
         </div>
 
-        <!-- Dedicated Transport & Modifier Buttons: Play/Pause, Rec, Sustain, Shift, Octaves -->
-        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center;">
+        <!-- Dedicated Transport & Modifier Buttons: Play/Pause, Rec, Sustain, Shift, Octave Down/Up -->
+        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; text-align: center;">
           <div id="t-play-pause" style="background: #282c34; border: 1px solid #2ecc71; border-radius: 3px; padding: 3px; font-size: 8px; color: #abb2bf;">
             <div style="font-weight: bold; color: #2ecc71;">▶❚❚ PLAY</div>
             <div style="font-size: 6px; color: #5c6370;">N:91</div>
@@ -306,16 +315,20 @@ export class GuidedTester {
             <div style="font-weight: bold; color: #e67e22;">SHIFT</div>
             <div style="font-size: 6px; color: #5c6370;">N:98</div>
           </div>
-          <div id="t-hw-oct" style="background: #282c34; border: 1px solid #3e4451; border-radius: 3px; padding: 3px; font-size: 8px; color: #abb2bf;">
-            <div style="font-weight: bold; color: #61afef;">OCT ▲/▼</div>
-            <div style="font-size: 6px; color: #5c6370;">HW Transpose</div>
+          <div id="t-hw-oct-dn" title="APC Key 25 Mk1 Octave Down transposes internally — press OCT DN then strike a low piano key to confirm" style="background: #282c34; border: 1px solid #3e4451; border-radius: 3px; padding: 3px; font-size: 8px; color: #abb2bf; transition: all 0.12s ease;">
+            <div style="font-weight: bold; color: #61afef;">OCT ▼</div>
+            <div id="t-hw-oct-dn-sub" style="font-size: 6px; color: #5c6370;">HW Shift</div>
+          </div>
+          <div id="t-hw-oct-up" title="APC Key 25 Mk1 Octave Up transposes internally — press OCT UP then strike a high piano key to confirm" style="background: #282c34; border: 1px solid #3e4451; border-radius: 3px; padding: 3px; font-size: 8px; color: #abb2bf; transition: all 0.12s ease;">
+            <div style="font-weight: bold; color: #61afef;">OCT ▲</div>
+            <div id="t-hw-oct-up-sub" style="font-size: 6px; color: #5c6370;">HW Shift</div>
           </div>
         </div>
 
         <!-- 25-Key Piano Keyboard Preview -->
         <div style="display: flex; flex-direction: column; gap: 2px;">
           <div style="display: flex; justify-content: space-between; font-size: 8px; color: #828997;">
-            <span>25-KEY KEYBED (CHANNEL 2) // C3 (48) TO C5 (72)</span>
+            <span id="t-key-range-label">25-KEY KEYBED (CHANNEL 2) // C3 (48) TO C5 (72) — Press OCT ▲+high key or OCT ▼+low key</span>
             <span id="t-piano-live-badge" style="color: #00cec9;">READY</span>
           </div>
           <div style="background: #0d0f12; height: 46px; border-radius: 4px; display: flex; position: relative; overflow: hidden; border: 1px solid #3e4451;">
@@ -329,11 +342,18 @@ export class GuidedTester {
         </div>
       </div>
     `;
+
+    // Sync initial Octave Up/Down indicator state if already transposed
+    const curBase = this.midiManager.keyboardBaseNote ?? 48;
+    const baseOct = Math.floor(curBase / 12) - 1;
+    const topOct = Math.floor((curBase + 24) / 12) - 1;
+    const octDelta = Math.round((curBase - this.defaultBaseNote) / 12);
+    this._updateOctaveIndicators(octDelta, null, curBase, baseOct, topOct);
   }
 
   _handleTestMidi(event) {
     const { status, channel, d1, d2, command } = event;
-    const msgBox = document.getElementById('tester-last-msg');
+    const msgBox = this._getEl('tester-last-msg');
 
     // -------------------------------------------------------------
     // INTERCEPT DEDICATED TRANSPORT BUTTONS (Notes 91 & 93 on Ch 1)
@@ -345,7 +365,7 @@ export class GuidedTester {
       }
       this.midiManager.sendLed(91, APC_MK1_LEDS.GREEN);
       setTimeout(() => this.midiManager.sendLed(91, APC_MK1_LEDS.OFF), 350);
-      const playEl = document.getElementById('t-play-pause');
+      const playEl = this._getEl('t-play-pause');
       if (playEl) {
         playEl.style.background = '#2ecc71';
         playEl.style.color = '#121417';
@@ -363,7 +383,7 @@ export class GuidedTester {
       }
       this.midiManager.sendLed(93, APC_MK1_LEDS.RED);
       setTimeout(() => this.midiManager.sendLed(93, APC_MK1_LEDS.OFF), 350);
-      const recEl = document.getElementById('t-rec');
+      const recEl = this._getEl('t-rec');
       if (recEl) {
         recEl.style.background = '#e74c3c';
         recEl.style.color = '#ffffff';
@@ -390,30 +410,56 @@ export class GuidedTester {
       if (command === 0x90 && vel > 0) {
         this.testedKeys.add(note);
 
+        // Detect APC Key 25 internal hardware Octave Up / Octave Down transposition!
+        const prevBase = this.midiManager.keyboardBaseNote ?? 48;
+        let octShiftDir = null;
+        if (note < prevBase) {
+          const stepsDown = Math.ceil((prevBase - note) / 12);
+          this.midiManager.keyboardBaseNote = Math.max(0, prevBase - (stepsDown * 12));
+          octShiftDir = 'down';
+          this.testedButtons.add('oct_dn');
+        } else if (note >= prevBase + 25) {
+          const stepsUp = Math.ceil((note - (prevBase + 24)) / 12);
+          this.midiManager.keyboardBaseNote = Math.min(96, prevBase + (stepsUp * 12));
+          octShiftDir = 'up';
+          this.testedButtons.add('oct_up');
+        }
+
+        const curBase = this.midiManager.keyboardBaseNote;
+        const baseOct = Math.floor(curBase / 12) - 1;
+        const topOct = Math.floor((curBase + 24) / 12) - 1;
+        const octDelta = Math.round((curBase - this.defaultBaseNote) / 12);
+
+        // Light up OCT ▼ or OCT ▲ just like the physical APC Key 25 LEDs!
+        this._updateOctaveIndicators(octDelta, octShiftDir, curBase, baseOct, topOct);
+
         const noteName = this.noteNames[note % 12];
         const octave = Math.floor(note / 12) - 1;
         const fullNote = `${noteName}${octave}`;
 
         // Update Keybed Status UI
-        const chEl = document.getElementById('t-key-ch');
-        const noteEl = document.getElementById('t-key-note');
-        const velEl = document.getElementById('t-key-vel');
-        const baseEl = document.getElementById('t-key-base');
+        const chEl = this._getEl('t-key-ch');
+        const noteEl = this._getEl('t-key-note');
+        const velEl = this._getEl('t-key-vel');
+        const baseEl = this._getEl('t-key-base');
         if (chEl) chEl.textContent = `Channel 2 (Keybed Confirmed!)`;
         if (noteEl) noteEl.textContent = `${fullNote} (MIDI #${note})`;
         if (velEl) velEl.textContent = `${vel}`;
-        if (baseEl) baseEl.textContent = `C${Math.floor(this.midiManager.keyboardBaseNote / 12) - 1} (Note ${this.midiManager.keyboardBaseNote})`;
+        if (baseEl) baseEl.textContent = `C${baseOct} (Note ${curBase}) [${octDelta === 0 ? 'BASE' : (octDelta > 0 ? `OCT +${octDelta}` : `OCT ${octDelta}`)}]`;
 
         if (msgBox) {
-          msgBox.innerHTML = `🎹 <strong style="color: #00cec9;">PIANO KEY (CH 2):</strong> Note ${note} (${fullNote}) // Velocity: ${vel}`;
+          const shiftBadge = octShiftDir
+            ? `<br><strong style="color: #ff9f43;">OCTAVE ${octShiftDir === 'up' ? 'UP ▲' : 'DOWN ▼'} DETECTED!</strong> Range shifted to C${baseOct}–C${topOct}`
+            : '';
+          msgBox.innerHTML = `<strong style="color: #00cec9;">PIANO KEY (CH 2):</strong> Note ${note} (${fullNote}) // Velocity: ${vel}${shiftBadge}`;
         }
 
         // Visual Feedback on Keybed
-        const keyIndex = Math.max(0, Math.min(24, note - this.midiManager.keyboardBaseNote));
-        const keyEl = document.getElementById(`t-key-${keyIndex}`);
+        const keyIndex = Math.max(0, Math.min(24, note - curBase));
+        const keyEl = this._getEl(`t-key-${keyIndex}`);
         if (keyEl) {
           const isBlack = [1, 3, 6, 8, 10, 13, 15, 18, 20, 22].includes(keyIndex);
-          keyEl.style.background = '#ff5722';
+          keyEl.style.background = '#ff9800';
           setTimeout(() => {
             keyEl.style.background = isBlack ? '#1a1d21' : '#f1f2f6';
           }, 220);
@@ -439,7 +485,7 @@ export class GuidedTester {
       if (coord) {
         this.testedPads.add(note);
         if (msgBox) {
-          msgBox.innerHTML = `🟩 <strong style="color: #2ecc71;">PAD HIT (CH 1):</strong> Note #${note} (Row ${coord.row}, Col ${coord.col}) // Vel: ${vel}`;
+          msgBox.innerHTML = `<strong style="color: #2ecc71;">PAD HIT (CH 1):</strong> Note #${note} (Row ${coord.row}, Col ${coord.col}) // Vel: ${vel}`;
         }
 
         // Send Bi-directional LED sequence to hardware: Green -> Amber -> Red -> Off!
@@ -448,7 +494,7 @@ export class GuidedTester {
         setTimeout(() => this.midiManager.sendLed(note, APC_MK1_LEDS.RED), 200);
         setTimeout(() => this.midiManager.sendLed(note, APC_MK1_LEDS.OFF), 350);
 
-        const padEl = document.getElementById(`t-pad-${coord.row}-${coord.col}`);
+        const padEl = this._getEl(`t-pad-${coord.row}-${coord.col}`);
         if (padEl) {
           padEl.style.background = '#2ecc71';
           setTimeout(() => padEl.style.background = '#202428', 300);
@@ -460,14 +506,14 @@ export class GuidedTester {
         this.testedButtons.add(note);
         const idx = APC_TRACK_BUTTON_NOTES.indexOf(note);
         const trLabels = ['▲ (Up / Track 1)', '▼ (Down / Track 2)', '◄ (Left / Track 3)', '► (Right / Track 4)', 'VOLUME (Track 5)', 'PAN (Track 6)', 'SEND (Track 7)', 'DEVICE (Track 8)'];
-        if (msgBox) msgBox.innerHTML = `🔘 <strong style="color: #61afef;">BOTTOM TRACK BUTTON:</strong> ${trLabels[idx]} (Note #${note})`;
+        if (msgBox) msgBox.innerHTML = `<strong style="color: #61afef;">BOTTOM TRACK BUTTON:</strong> ${trLabels[idx]} (Note #${note})`;
 
         // Send LED blink to button
         this.midiManager.sendLed(note, APC_MK1_LEDS.GREEN);
         setTimeout(() => this.midiManager.sendLed(note, APC_MK1_LEDS.RED), 150);
         setTimeout(() => this.midiManager.sendLed(note, APC_MK1_LEDS.OFF), 300);
 
-        const trEl = document.getElementById(`t-track-${idx}`);
+        const trEl = this._getEl(`t-track-${idx}`);
         if (trEl) {
           trEl.style.background = '#61afef';
           trEl.style.color = '#121417';
@@ -488,8 +534,8 @@ export class GuidedTester {
         setTimeout(() => this.midiManager.sendLed(note, APC_MK1_LEDS.OFF), 300);
 
         if (note === 81) {
-          if (msgBox) msgBox.innerHTML = `🛑 <strong style="color: #e74c3c;">STOP ALL CLIPS BUTTON:</strong> Note #${note}`;
-          const stopEl = document.getElementById('t-stop-all');
+          if (msgBox) msgBox.innerHTML = `<strong style="color: #e74c3c;">STOP ALL CLIPS BUTTON:</strong> Note #${note}`;
+          const stopEl = this._getEl('t-stop-all');
           if (stopEl) {
             stopEl.style.background = '#e74c3c';
             setTimeout(() => stopEl.style.background = '#3a1f1f', 300);
@@ -497,8 +543,8 @@ export class GuidedTester {
           this._checkWizardProgress('transport', 81);
         } else {
           const scNum = note - 81; // 82->1, 83->2, etc.
-          if (msgBox) msgBox.innerHTML = `🎬 <strong style="color: #ff9f43;">SCENE ${scNum} BUTTON:</strong> Note #${note}`;
-          const scEl = document.getElementById(`t-scene-${scNum}`);
+          if (msgBox) msgBox.innerHTML = `<strong style="color: #ff9f43;">SCENE ${scNum} BUTTON:</strong> Note #${note}`;
+          const scEl = this._getEl(`t-scene-${scNum}`);
           if (scEl) {
             scEl.style.background = '#2ecc71';
             scEl.style.color = '#121417';
@@ -513,8 +559,8 @@ export class GuidedTester {
       // 4. Physical Shift Button (Note 98)
       else if (note === APC_BUTTON_NOTES.SHIFT_MK1 || note === 98) {
         this.testedButtons.add(note);
-        if (msgBox) msgBox.innerHTML = `⚡ <strong style="color: #e67e22;">PHYSICAL SHIFT BUTTON:</strong> Note #98 (0x62)`;
-        const shEl = document.getElementById('t-shift');
+        if (msgBox) msgBox.innerHTML = `<strong style="color: #e67e22;">PHYSICAL SHIFT BUTTON:</strong> Note #98 (0x62)`;
+        const shEl = this._getEl('t-shift');
         if (shEl) {
           shEl.style.background = '#e67e22';
           shEl.style.color = '#121417';
@@ -527,7 +573,7 @@ export class GuidedTester {
       } else {
         // Fallback key on Channel 1 (if external keyboard)
         this.testedKeys.add(note);
-        if (msgBox) msgBox.innerHTML = `🎹 KEY ON CH 1: Note #${note} // Vel: ${vel}`;
+        if (msgBox) msgBox.innerHTML = `KEY ON CH 1: Note #${note} // Vel: ${vel}`;
       }
     }
     // Control Change (Knobs CC 48-55 & Sustain CC 64)
@@ -538,29 +584,76 @@ export class GuidedTester {
 
       if (knobIdx !== -1) {
         this.testedKnobs.add(knobIdx);
-        if (msgBox) msgBox.innerHTML = `🎛 <strong style="color: #ff9f43;">KNOB ${knobIdx + 1} (CC #${cc}):</strong> Value: ${val} / 127`;
-        const kEl = document.getElementById(`t-knob-${knobIdx}`);
+        if (msgBox) msgBox.innerHTML = `<strong style="color: #ff9f43;">KNOB ${knobIdx + 1} (CC #${cc}):</strong> Value: ${val} / 127`;
+        const kEl = this._getEl(`t-knob-${knobIdx}`);
         if (kEl) {
           kEl.querySelector('.t-k-val').textContent = `${val}`;
-          kEl.style.borderColor = '#ff5722';
+          kEl.style.borderColor = '#ff9800';
           setTimeout(() => kEl.style.borderColor = '#3e4451', 300);
         }
         this._checkWizardProgress('knob', knobIdx, `CC ${cc} = ${val}`);
       } else if (cc === 64) {
         this.testedButtons.add(64);
         const isPressed = val > 63;
-        if (msgBox) msgBox.innerHTML = `🎵 <strong style="color: #00cec9;">SUSTAIN BUTTON/PEDAL (CC #64):</strong> ${isPressed ? 'PRESSED (127)' : 'RELEASED (0)'}`;
-        const sustEl = document.getElementById('t-sustain');
+        if (msgBox) msgBox.innerHTML = `<strong style="color: #00cec9;">SUSTAIN BUTTON/PEDAL (CC #64):</strong> ${isPressed ? 'PRESSED (127)' : 'RELEASED (0)'}`;
+        const sustEl = this._getEl('t-sustain');
         if (sustEl) {
           sustEl.style.background = isPressed ? '#00cec9' : '#282c34';
           sustEl.style.color = isPressed ? '#121417' : '#abb2bf';
         }
         this.audioEngine.setSustain(isPressed);
         this._checkWizardProgress('sustain', isPressed ? '127' : '0');
+      } else {
+        if (msgBox) msgBox.innerHTML = `CC #${cc} (Ch ${channel}): Value ${val}`;
       }
     }
 
     this._updateStats();
+  }
+
+  _updateOctaveIndicators(octDelta, shiftDir, curBase, baseOct, topOct) {
+    const dnEl = this._getEl('t-hw-oct-dn');
+    const upEl = this._getEl('t-hw-oct-up');
+    const dnSub = this._getEl('t-hw-oct-dn-sub');
+    const upSub = this._getEl('t-hw-oct-up-sub');
+    const rangeLbl = this._getEl('t-key-range-label');
+
+    if (rangeLbl) {
+      rangeLbl.textContent = `25-KEY KEYBED (CHANNEL 2) // C${baseOct} (${curBase}) TO C${topOct} (${curBase + 24})`;
+    }
+
+    if (dnEl) {
+      const activeDn = octDelta < 0 || shiftDir === 'down';
+      dnEl.style.background = activeDn ? '#c0392b' : '#282c34';
+      dnEl.style.borderColor = activeDn ? '#ff6b6b' : '#3e4451';
+      dnEl.style.color = activeDn ? '#ffffff' : '#abb2bf';
+      if (dnSub) dnSub.textContent = octDelta < 0 ? `OCT ${octDelta}` : 'HW Shift';
+    }
+
+    if (upEl) {
+      const activeUp = octDelta > 0 || shiftDir === 'up';
+      upEl.style.background = activeUp ? '#c0392b' : '#282c34';
+      upEl.style.borderColor = activeUp ? '#ff6b6b' : '#3e4451';
+      upEl.style.color = activeUp ? '#ffffff' : '#abb2bf';
+      if (upSub) upSub.textContent = octDelta > 0 ? `OCT +${octDelta}` : 'HW Shift';
+    }
+
+    // Flash bright highlight briefly on transition so returning to base octave (OCT 0) also flashes!
+    if (shiftDir === 'down' && dnEl && octDelta === 0) {
+      dnEl.style.background = '#e67e22';
+      setTimeout(() => {
+        dnEl.style.background = '#282c34';
+        dnEl.style.borderColor = '#3e4451';
+        dnEl.style.color = '#abb2bf';
+      }, 320);
+    } else if (shiftDir === 'up' && upEl && octDelta === 0) {
+      upEl.style.background = '#e67e22';
+      setTimeout(() => {
+        upEl.style.background = '#282c34';
+        upEl.style.borderColor = '#3e4451';
+        upEl.style.color = '#abb2bf';
+      }, 320);
+    }
   }
 
   _flashAllLeds(velocity) {
@@ -606,10 +699,10 @@ export class GuidedTester {
   }
 
   _updateStats() {
-    const sP = document.getElementById('stat-pads');
-    const sK = document.getElementById('stat-knobs');
-    const sKey = document.getElementById('stat-keys');
-    const sB = document.getElementById('stat-buttons');
+    const sP = this._getEl('stat-pads');
+    const sK = this._getEl('stat-knobs');
+    const sKey = this._getEl('stat-keys');
+    const sB = this._getEl('stat-buttons');
 
     if (sP) sP.textContent = `${this.testedPads.size} / 40`;
     if (sK) sK.textContent = `${this.testedKnobs.size} / 8`;
@@ -618,7 +711,7 @@ export class GuidedTester {
   }
 
   _renderWizardStep() {
-    const container = document.getElementById('wizard-container');
+    const container = this._getEl('wizard-container');
     if (!container) return;
 
     const step = this.wizardSteps[this.wizardStep];
@@ -700,7 +793,7 @@ export class GuidedTester {
   }
 
   _checkWizardProgress(type, id, extra = '') {
-    const liveBox = document.getElementById('wizard-live-box');
+    const liveBox = this._getEl('wizard-live-box');
     if (!liveBox) return;
 
     const curStep = this.wizardSteps[this.wizardStep];
@@ -743,7 +836,7 @@ export class GuidedTester {
   }
 
   _renderLayoutReference() {
-    const container = document.getElementById('layout-reference-container');
+    const container = this._getEl('layout-reference-container');
     if (!container) return;
 
     container.innerHTML = `

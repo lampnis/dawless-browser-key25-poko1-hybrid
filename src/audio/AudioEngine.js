@@ -111,12 +111,19 @@ export class AudioEngine {
   }
 
   /**
-   * Resume audio context on user gesture or incoming MIDI
+   * Resume audio context on user gesture or incoming MIDI without ever hanging
    */
   async ensureAudioContext() {
-    if (this.ctx.state === 'suspended') {
-      await this.ctx.resume();
+    if (!this.ctx || this.ctx.state !== 'suspended' || typeof this.ctx.resume !== 'function') {
+      return;
     }
+    try {
+      // Never allow an unactivated MIDI event to hang callers forever waiting for ctx.resume()
+      await Promise.race([
+        this.ctx.resume(),
+        new Promise(resolve => setTimeout(resolve, 60))
+      ]);
+    } catch (e) {}
   }
 
   getActiveSlot() {
@@ -231,10 +238,11 @@ export class AudioEngine {
     if (slot) {
       if (slot.type === 'melodic') {
         slot.stopNote(midiNote);
-      } else {
-        const sliceIdx = ((midiNote % 16) + 16) % 16;
+      } else if (slot.loop) {
+        // Only cut off drum slices on key release when Loop mode is active;
+        // standard drum one-shots must ring out their full natural transient/decay!
         for (const voice of slot.activeVoices) {
-          if (voice.sliceIndex === sliceIdx && voice.stop) {
+          if (voice.stop) {
             voice.stop();
           }
         }

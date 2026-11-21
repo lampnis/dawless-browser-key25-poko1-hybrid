@@ -762,19 +762,20 @@ To eliminate digital clicking, transient pops, and bleeding from neighboring sli
 
 ---
 
-## 17. FL Studio 21-Inspired UI Revamp (100% Hardware-First Preserved)
+## 17. Authentic FL Studio 21 Matte UI, Visual APC Key 25 Tooltips & First-Run Walkthrough
 
-The full workstation view (`styles/open-ko.css`) adopts an **FL Studio 21 Dark Slate** visual hierarchy while keeping every control 1-to-1 mapped to the physical Akai APC Key 25 Mk1:
+The full workstation view (`styles/open-ko.css`) is crafted around an authentic **Image-Line FL Studio 21 Matte Steel-Slate** desktop aesthetic (zero neon glow or rainbow button clutter) while preserving 100% physical Akai APC Key 25 Mk1 control:
 
-1. **Channel Rack Two-Tone Step Chicklets (`.step-btn-16` & `.beat-group-alt`):**
-   - Steps 1–4 and 9–12 are styled in cool dark slate, while Steps 5–8 and 13–16 use warm reddish-plum slate, giving instant peripheral beat-group recognition identical to FL Studio's Channel Rack.
-   - Active steps illuminate in bright warm orange-gold with a glowing emerald bottom LED bar; parameter-locked steps display a cyan `.has-plock` dot; micro-nudged steps display a crisp top-right `.micro-badge` pill (e.g. `-2`, `+3`); and the currently inspected/held step shows a cyan focus ring (`.selected-step`).
-2. **Step Micro-Timing Inspector Bar:**
-   - Displays the selected/held step's exact pitch or drum slice, velocity, active P-Locks, and 128th sub-tick offset (`-4/128` to `+3/128`), alongside quick `[◄ -1/128]` / `[+1/128 ►]` nudge controls (mirrored on hardware via `Hold Step + SHIFT + Knob 3` or `SHIFT + Pads 11/12`).
-3. **FL Studio Playlist Arrangement Bar (`.song-chain-bar` & `.chain-block`):**
-   - Renders chained patterns (`P1 -> P1 -> P2 -> P3`) as color-accented Playlist clips with live active-bar highlighting.
-4. **16-Track Insert Mixer & Sidechain Meters:**
-   - Individual insert channel strips with voice-trigger LEDs, step counters, `[M]` Mute, `[S]` Solo, `[D]` (Cyan Sidechain Duck) / `[SC]` (Orange Sidechain Trigger Source) badges, and real-time animated `#sidechain-duck-fill` + `#comp-gr-fill` gain reduction meters in the Master DSP Rack.
+1. **Channel Rack 4-Step Chicklets & 60-Preset Sample Picker:**
+   - Steps 1–4 and 9–12 use matte cool slate-grey (`#626c74` / `#505960`), while Steps 5–8 and 13–16 use FL Studio's signature dusty plum (`#76575d` / `#61474c`), lighting warm cream-white (`#f2ede4`) when active with crisp `±128th` micro-timing pills and P-Lock dots.
+   - An integrated Channel Sample bar lets you switch tracks (`◀`/`▶`), select any of the **60 factory presets** (46 melodic / 14 drum kits) from a dropdown or prev/next arrows, and audition samples or clicked drum slices immediately.
+2. **On-the-Fly Floating APC Key 25 SVG Hardware Tooltips & Ableton-Style Info View (`ApcHardwareHelp.js`):**
+   - Hovering over *any* button, knob, pad, step, or mixer control reveals a crisp floating tooltip containing a live miniature **SVG schematic of the physical Akai APC Key 25 Mk1** with the exact physical pad, knob, Scene button, Track button, Shift modifier, or Keybed highlighted.
+   - Click **`INFO BOX`** (or press **`?`**) to pin a dedicated Ableton Live-style docked **Info View** panel in the bottom-left corner with a `FLOAT: ON/OFF` toggle.
+3. **10-Step Interactive First-Run Walkthrough (`GuidedWalkthrough.js`):**
+   - Automatically greets first-time users with a hand-holding tour (`open_ko_walkthrough_done_v1`) spotlighting Transport, the 60-Preset Sample Picker, Freeform 128th Auto-BPM Recording, 8X Zoom & Pocket Nudging, Constant-Duration Stretching, Sidechain Ducking, 8 Punch-In FX, Playlist Chaining, and APC Calibration — complete with live **"Try It"** buttons and matching APC Key 25 diagrams. Relaunch anytime via the **`TOUR`** toolbar button.
+4. **16-Track Vertical Insert Mixer & Master FX Insert Slots:**
+   - Slim vertical FL Insert channels with vertical metallic faders, mute/solo/sidechain (`M`/`S`/`D`/`SC`) micro-toggles, click-strip track selection, and Slots 1–5 Master FX readouts.
 
 ---
 
@@ -786,30 +787,33 @@ src/
 ├── main.js                     # Application bootstrap, SessionLogger init, Audio/MIDI/UI wiring
 ├── audio/
 │   ├── AudioEngine.js          # Master Web Audio graph, Sidechain Ducking Bus, PO Dual Filter, Glue Comp
-│   ├── SampleSlot.js           # Voice playback, Pitch-Only OLA cache vs Squeeze, 4ms anti-bleed slice guard
-│   ├── PunchInFX.js            # 8 momentary performance FX (parallel HPF/LPF, SP-1200, Vinyl Brake, Dub Echo)
+│   ├── SampleSlot.js           # Voice playback, Constant-Time Pitch-Only OLA cache vs Squeeze, 4ms anti-bleed
+│   ├── PunchInFX.js            # 8 momentary FX (crossfaded HPF/LPF sweeps, SP-1200, Vinyl Brake, Dub Echo)
 │   ├── TransientDetector.js    # Spectral energy transient auto-slicer (16 slices)
 │   ├── AudioRecorder.js        # Line-In / Mic & bit-perfect Tab Audio capture (-0.5 dB auto-normalizer)
 │   └── AudioExporter.js        # 100x speed OfflineAudioContext renderer (128th micro-timing + sidechain WAV)
 ├── sequencer/
 │   ├── StepData.js             # StepData (polyphonic notes[], pLocks, -4..+3 microTiming) & Pattern (1x-8x zoom)
-│   └── Sequencer.js            # 100ms lookahead scheduler, Freeform Auto-BPM 128th loop capture, step nudging
+│   └── Sequencer.js            # Synchronous pause, zombie-timer-free 100ms lookahead, Freeform Auto-BPM
 ├── midi/
 │   ├── ApcConstants.js         # APC Key 25 Mk1/Mk2 Note/CC constants, LED velocities, SysEx, FX names
-│   ├── MidiMappingConfig.js    # Top-Down / Bottom-Up 8x5 coordinate profiles & calibration persistence
-│   └── MidiManager.js          # Web MIDI I/O, Ch 1 vs Ch 2 strict isolation, Shift+Row 0/1 tools, Eco LED cache
+│   ├── MidiMapper.js           # Top-Down / Bottom-Up 8x5 coordinate profiles & calibration persistence
+│   └── MidiManager.js          # Web MIDI I/O, Ch 1 vs Ch 2 isolation, targeted loopback filter, Shift+Row 0/1
 ├── presets/
 │   └── SampleLibrary.js        # Real-time procedural DSP synthesis for 46 Melodic + 14 Drum Kit presets
 ├── project/
 │   └── ProjectManager.js       # Version 2 localStorage schema persistence & clean 4/4 kick project initializer
 ├── ui/
-│   ├── UIManager.js            # Hardware-to-DOM controller, deferred step-hold inspector, delta pot nudging
-│   ├── MixerRackView.js        # 16-track Insert Mixer strips ([M]/[S]/[D]/[SC]) & Master DSP readouts
-│   ├── WaveformView.js         # Canvas waveform renderer with trim handles & 16-slice markers
-│   ├── KeyboardView.js         # On-screen 25-key chromatic / 16-slice touch keyboard
+│   ├── UIManager.js            # Hardware-to-DOM controller, preset browser, deferred step-hold, delta nudging
+│   ├── ApcHardwareHelp.js      # Floating APC Key 25 SVG hardware tooltips & Ableton-style docked Info Box
+│   ├── GuidedWalkthrough.js    # 10-step first-run hand-holding onboarding tour with live spotlighting
+│   ├── HardwareGrid.js         # Mode-synced 8x5 tactile pad matrix & 5 Scene buttons
+│   ├── MixerRackView.js        # 16-track vertical FL Insert Mixer strips ([M]/[S]/[D]/[SC]) & Master FX Slots
+│   ├── WaveformView.js         # Edison-style waveform canvas with trim handles & click-to-audition slices
+│   ├── KeyboardView.js         # On-screen 25-key chromatic / 16-slice touch & QWERTY keyboard
 │   ├── MinimalPoView.js        # Pocket Operator segment LCD & animated K.O! Boxer canvas
-│   └── GuidedTester.js         # Interactive APC Key 25 diagnostic wizard & ASCII hardware map
-└── logging/
+│   └── GuidedTester.js         # Interactive APC Key 25 diagnostic wizard (with OCT ▲/▼ detection) & MIDI map
+└── utils/
     └── SessionLogger.js        # Console interceptor & automatic ISO-timestamped session log archiver
 ```
 
@@ -839,7 +843,7 @@ Both real-time playback and offline 16-bit WAV rendering share an identical bus 
 - Per-slot `stretchMode` (`'pitch_only'` | `'resample'`), `sidechainDucked`, `pitch`, `trimStart`, `trimEnd`, `decay`, `volume`, `loop`, and `selectedSliceIndex`.
 
 ### 5. Running Automated Tests & Production Builds
-* **Node.js CLI Test Runner (All 12 Test Suites / 73 Unit Tests):**
+* **Node.js CLI Test Runner (All 12 Test Suites / 79 Unit Tests):**
   ```bash
   node tests/run-tests.js
   ```
